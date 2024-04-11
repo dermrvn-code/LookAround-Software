@@ -41,5 +41,9 @@ public class HardwareEmulator : MonoBehaviour
         {
             interaction.Interact();
         }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            DebugConsole.ToggleActivation();
+        }
     }
 }

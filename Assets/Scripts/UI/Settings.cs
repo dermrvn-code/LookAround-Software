@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +12,18 @@ public class Settings : MonoBehaviour
     public EyesHandler eyes;
     public Slider eyeSpacing;
     public Slider heightOffset;
+    public TMP_Text sceneFolderPathText;
     private bool visible = false;
+    public static string scenesFolder = "";
+
+
+
+
+    void Awake()
+    {
+        LoadValues();
+        sceneFolderPathText.text = scenesFolder;
+    }
 
     void Start()
     {
@@ -22,6 +35,27 @@ public class Settings : MonoBehaviour
         }
         eyeSpacing.value = eyes.eyeSpacing;
         heightOffset.value = eyes.heightOffset;
+    }
+
+    void OnApplicationQuit()
+    {
+        SaveValues();
+    }
+
+    public void UpdateFilePath(string path)
+    {
+        scenesFolder = path;
+        sceneFolderPathText.text = scenesFolder;
+    }
+
+    public void SelectNewScenesFolder()
+    {
+        string path = EditorUtility.OpenFolderPanel("Wähle einen Ordner", "", "");
+
+        if (path != null)
+        {
+            UpdateFilePath(path);
+        }
     }
 
     public void ChangeEyeSpacing(float spacing)
@@ -67,5 +101,15 @@ public class Settings : MonoBehaviour
         OpenView();
     }
 
+    private void LoadValues()
+    {
+        scenesFolder = PlayerPrefs.GetString("scenesFolder", "");
+    }
+
+    private void SaveValues()
+    {
+        PlayerPrefs.SetString("scenesFolder", scenesFolder);
+        PlayerPrefs.Save();
+    }
 
 }

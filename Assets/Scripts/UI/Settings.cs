@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using SFB;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -13,8 +14,9 @@ public class Settings : MonoBehaviour
     public Slider eyeSpacing;
     public Slider heightOffset;
     public TMP_Text sceneFolderPathText;
+    public PopUp popupPrefab;
     private bool visible = false;
-    public static string scenesFolder = "";
+    public static string sceneOverviewFile = "";
 
 
 
@@ -22,7 +24,7 @@ public class Settings : MonoBehaviour
     void Awake()
     {
         LoadValues();
-        sceneFolderPathText.text = scenesFolder;
+        sceneFolderPathText.text = sceneOverviewFile;
     }
 
     void Start()
@@ -44,17 +46,22 @@ public class Settings : MonoBehaviour
 
     public void UpdateFilePath(string path)
     {
-        scenesFolder = path;
-        sceneFolderPathText.text = scenesFolder;
+        sceneOverviewFile = path;
+        sceneFolderPathText.text = sceneOverviewFile;
     }
 
     public void SelectNewScenesFolder()
     {
-        string path = EditorUtility.OpenFolderPanel("Wähle einen Ordner", "", "");
+        ExtensionFilter[] extensionList = new[] {
+            new ExtensionFilter("XML", "xml")
+        };
+        string[] path = StandaloneFileBrowser.OpenFilePanel("Wähle Szenen Datei", "", extensionList, false);
 
-        if (path != null)
+        if (path.Length == 1)
         {
-            UpdateFilePath(path);
+            UpdateFilePath(path[0]);
+            var popUp = Instantiate(popupPrefab, transform);
+            popUp.SetMessage("Starte die App neu, um diese Änderung wirksam zu machen");
         }
     }
 
@@ -103,12 +110,14 @@ public class Settings : MonoBehaviour
 
     private void LoadValues()
     {
-        scenesFolder = PlayerPrefs.GetString("scenesFolder", "");
+        sceneOverviewFile = PlayerPrefs.GetString("sceneOverviewFile", "");
+        Debug.Log("Loaded Settings values: " + sceneOverviewFile);
     }
 
     private void SaveValues()
     {
-        PlayerPrefs.SetString("scenesFolder", scenesFolder);
+        PlayerPrefs.SetString("sceneOverviewFile", sceneOverviewFile);
+        Debug.Log("Stored Settings values: " + sceneOverviewFile);
         PlayerPrefs.Save();
     }
 

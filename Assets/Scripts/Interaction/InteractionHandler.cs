@@ -10,18 +10,22 @@ public class InteractionHandler : MonoBehaviour
     Interactable target;
     EyesHandler eyesHandler;
 
-    public Dictionary<DomePosition, Interactable> elements = new Dictionary<DomePosition, Interactable>();
+    Dictionary<DomePosition, Interactable> elements = new Dictionary<DomePosition, Interactable>();
 
-    public LayerMask layer;
+    [SerializeField]
+    LayerMask layer;
+
+    public bool updateElementsNextFrame = true;
 
     void Start()
     {
         eyesHandler = GetComponent<EyesHandler>();
-        UpdateElements();
     }
 
     void UpdateElements()
     {
+        elements = new Dictionary<DomePosition, Interactable>();
+        target = null;
         var domeElements = FindObjectsOfType<DomePosition>();
         foreach (var domeElement in domeElements)
         {
@@ -40,6 +44,7 @@ public class InteractionHandler : MonoBehaviour
             }
             elements.Add(domeElement, elementToAdd);
         }
+        updateElementsNextFrame = false;
     }
 
     public void Interact()
@@ -54,6 +59,8 @@ public class InteractionHandler : MonoBehaviour
     int offset = 10;
     void Update()
     {
+        if (updateElementsNextFrame) UpdateElements();
+
         if (eyesHandler.rotation != oldRotation)
         {
             oldRotation = eyesHandler.rotation;
@@ -74,7 +81,7 @@ public class InteractionHandler : MonoBehaviour
                     {
                         leftOffset = leftOffset - 360;
                     }
-                    if (leftOffset < element.Key.x && element.Key.x < (oldRotation + offset) % 360)
+                    if (leftOffset < element.Key.position.x && element.Key.position.x < (oldRotation + offset) % 360)
                     {
                         target = element.Value;
                     }

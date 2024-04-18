@@ -1,5 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Video;
@@ -11,22 +14,32 @@ public class SceneChanger : MonoBehaviour
     public MeshRenderer domeRenderer;
 
     public Material videoMaterial;
-    public Material fotoMaterial;
+    public Material photoMaterial;
+
+    public Texture mainScreenImage;
+
+    public GameObject sceneElementsContainer;
 
     public VideoPlayer vp;
+    SceneManager sm;
+    InteractionHandler ih;
+
+    void Start()
+    {
+        sm = FindObjectOfType<SceneManager>();
+        ih = FindObjectOfType<InteractionHandler>();
+    }
 
     public void Quit()
     {
         Application.Quit();
     }
 
-
-    /*  ============== TEMP ==============  */
-    public VideoClip v1;
-    public VideoClip v2;
-
-    public bool switchScene = false;
-    public bool switchFormat = false;
+    public void ToMainScreen()
+    {
+        photoMaterial.mainTexture = mainScreenImage;
+        SwitchToFoto();
+    }
 
 
     void SwitchToVideo()
@@ -35,46 +48,86 @@ public class SceneChanger : MonoBehaviour
     }
     void SwitchToFoto()
     {
-        domeRenderer.material = fotoMaterial;
+        domeRenderer.material = photoMaterial;
     }
 
-    public void SwitchFormat(string sceneName)
+    public void SwitchSceneAnimation(Scene scene)
     {
         TransitionParticles(() =>
         {
-
-            if (switchFormat)
-            {
-                SwitchToVideo();
-            }
-            else
-            {
-                SwitchToFoto();
-            }
-            switchFormat = !switchFormat;
+            SwitchScene(scene);
         });
     }
 
-    public void SwitchScene(string sceneName)
+    public void SwitchScene(Scene scene)
     {
-        if (switchFormat) return;
-
-        TransitionParticles(() =>
+        LoadSceneElements(scene.SceneElements);
+        ih.updateElementsNextFrame = true;
+        if (scene.Type == Scene.MediaType.Video)
         {
+            SwitchToVideo();
+            vp.url = scene.Source;
+        }
+        else
+        {
+            Texture2D tex = new Texture2D(2, 2);
+            tex.LoadImage(File.ReadAllBytes(scene.Source));
+            photoMaterial.mainTexture = tex;
 
-            if (switchScene)
+            SwitchToFoto();
+        }
+    }
+
+    public TMP_Text textPrefab;
+    public void LoadSceneElements(List<SceneElement> sceneElements)
+    {
+
+        var children = new List<GameObject>();
+        foreach (Transform child in sceneElementsContainer.transform) children.Add(child.gameObject);
+        children.ForEach(child => Destroy(child));
+
+
+        foreach (var sceneElement in sceneElements)
+        {
+            if (sceneElement.type == SceneElement.ElementType.Text)
             {
-                vp.clip = v1;
+                LoadTextElement(sceneElement);
             }
-            else
-            {
-                vp.clip = v2;
-            }
-            switchScene = !switchScene;
+        }
+    }
+
+    public void LoadTextElement(SceneElement sceneElement)
+    {
+        var text = Instantiate(textPrefab, sceneElementsContainer.transform);
+        text.name = sceneElement.text;
+        text.text = sceneElement.text;
+        DomePosition dp = text.GetComponent<DomePosition>();
+        dp.position.x = sceneElement.x;
+        dp.position.y = sceneElement.y;
+        Interactable interactable = text.GetComponent<Interactable>();
+        Debug.Log(sceneElement.action);
+        interactable.OnInteract.AddListener(() =>
+        {
+            ActionParser(sceneElement.action);
         });
     }
 
-    /*  =================================  */
+    public void ActionParser(string action)
+    {
+        string pattern = @"toScene\((.*?)\)";
+        Match match = Regex.Match(action, pattern);
+        if (match.Success)
+        {
+            string sceneName = match.Groups[1].Value; // Extrahiere den Parameter aus der ersten Gruppe
+
+            Scene scene = sm.sceneList[sceneName];
+
+            if (scene != null)
+            {
+                SwitchSceneAnimation(scene);
+            }
+        }
+    }
 
     public void TransitionParticles(UnityAction action)
     {

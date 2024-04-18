@@ -7,6 +7,7 @@ public class DomePosition : MonoBehaviour
 {
 
     private Transform elementTransform;
+    public Vector2 position;
     public float x;
     public float y;
     public int distance = 10;
@@ -17,10 +18,12 @@ public class DomePosition : MonoBehaviour
         elementTransform = GetComponent<Transform>();
     }
 
-
+    Vector2 currentPosition;
     void Update()
     {
-        Vector3 cartesianPosition = PolarToCartesian(new Vector2(x, y));
+        if (currentPosition == position) return;
+        currentPosition = position;
+        Vector3 cartesianPosition = PolarToCartesian(currentPosition);
         SetRectPosition(cartesianPosition);
     }
 

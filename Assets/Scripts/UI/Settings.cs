@@ -10,21 +10,33 @@ using UnityEngine.UI;
 public class Settings : MonoBehaviour
 {
 
-    public EyesHandler eyes;
-    public Slider eyeSpacing;
-    public Slider heightOffset;
-    public TMP_Text sceneFolderPathText;
-    public PopUp popupPrefab;
-    private bool visible = false;
+    [SerializeField]
+    EyesHandler eyes;
+
+    [SerializeField]
+    Slider eyeSpacing;
+
+    [SerializeField]
+    Slider heightOffset;
+
+    [SerializeField]
+    TMP_Text sceneFolderPathText;
+
+    [SerializeField]
+    Toggle loadStartScreenOnBootToggle;
+
+    [SerializeField]
+    PopUp popupPrefab;
+    bool visible = false;
     public static string sceneOverviewFile = "";
-
-
+    public static bool loadStartSceenOnBoot = false;
 
 
     void Awake()
     {
         LoadValues();
         sceneFolderPathText.text = sceneOverviewFile;
+        loadStartScreenOnBootToggle.isOn = loadStartSceenOnBoot;
     }
 
     void Start()
@@ -48,6 +60,11 @@ public class Settings : MonoBehaviour
     {
         sceneOverviewFile = path;
         sceneFolderPathText.text = sceneOverviewFile;
+    }
+
+    public void UpdateLoadStartSceenOnBoot(bool value)
+    {
+        loadStartSceenOnBoot = value;
     }
 
     public void SelectNewScenesFolder()
@@ -111,13 +128,13 @@ public class Settings : MonoBehaviour
     private void LoadValues()
     {
         sceneOverviewFile = PlayerPrefs.GetString("sceneOverviewFile", "");
-        Debug.Log("Loaded Settings values: " + sceneOverviewFile);
+        loadStartSceenOnBoot = PlayerPrefs.GetInt("loadStartSceenOnBoot", 0) == 1 ? true : false;
     }
 
     private void SaveValues()
     {
         PlayerPrefs.SetString("sceneOverviewFile", sceneOverviewFile);
-        Debug.Log("Stored Settings values: " + sceneOverviewFile);
+        PlayerPrefs.SetInt("loadStartSceenOnBoot", loadStartSceenOnBoot ? 1 : 0);
         PlayerPrefs.Save();
     }
 

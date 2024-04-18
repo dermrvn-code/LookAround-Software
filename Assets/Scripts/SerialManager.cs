@@ -33,7 +33,7 @@ public class SerialManager : MonoBehaviour
         }
         else
         {
-            ConnectionText.text = "Nicht verbunden";
+            ConnectionText.text = "Not connected";
         }
     }
 
@@ -125,7 +125,7 @@ public class SerialManager : MonoBehaviour
     {
         if (ports.Count == 0)
         {
-            ConnectionText.text = $"Nicht verbunden";
+            ConnectionText.text = "Not Connected";
             return;
         }
 
@@ -150,12 +150,12 @@ public class SerialManager : MonoBehaviour
             // Open up our serial connection
             serial.Open();
 
-            ConnectionText.text = $"Verbunden {port}";
+            ConnectionText.text = "Connected {port}";
         }
         catch (Exception e)
         {
             Debug.LogError(e.Message);
-            ConnectionText.text = $"Nicht verbunden";
+            ConnectionText.text = "Nicht verbunden";
         }
     }
 
@@ -180,7 +180,7 @@ public class SerialManager : MonoBehaviour
             serial.Dispose();
             serial = null;
 
-            ConnectionText.text = "Nicht verbunden";
+            ConnectionText.text = "Not connected";
         }
     }
 

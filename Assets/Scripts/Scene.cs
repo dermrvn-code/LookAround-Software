@@ -19,23 +19,23 @@ public class Scene
     {
         get => _sceneElements;
     }
-    public bool IsMainScene
+    public bool IsStartScene
     {
-        get => _isMainScene;
+        get => _isStartScene;
     }
 
     MediaType _type;
     string _name;
     string _source;
     List<SceneElement> _sceneElements;
-    bool _isMainScene;
+    bool _isStartScene;
 
-    public Scene(MediaType type, string name, string source, List<SceneElement> sceneElements)
+    public Scene(MediaType type, string name, string source, List<SceneElement> sceneElements, bool isStartScene)
     {
-        this._type = type;
-        this._name = name;
-        this._source = source;
-        this._sceneElements = sceneElements;
+        _type = type;
+        _source = source;
+        _sceneElements = sceneElements;
+        _isStartScene = isStartScene;
     }
 
     public override string ToString()

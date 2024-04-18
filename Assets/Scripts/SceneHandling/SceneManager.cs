@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 
@@ -16,16 +15,18 @@ public class SceneManager : MonoBehaviour
     void Start()
     {
         sc = FindObjectOfType<SceneChanger>();
+        sc.ToMainScene();
+
+
         bool isLoaded = LoadSceneOverview();
 
-        if (isLoaded)
-        {
-            sc.SwitchScene(sceneList["First"]);
-        }
-        else
+        if (!isLoaded)
         {
             Debug.LogWarning("The scene overview file is not valid");
-            sc.ToMainScreen();
+        }
+        else if (Settings.loadStartSceenOnBoot)
+        {
+            sc.ToStartScene();
         }
     }
 
@@ -41,14 +42,20 @@ public class SceneManager : MonoBehaviour
         {
             string scenePath = scene.Attribute("path").Value;
             string sceneName = scene.Attribute("name").Value;
+            var startScene = scene.Attribute("startScene");
+            bool isStartScene = false;
+            if (startScene != null)
+            {
+                if (startScene.Value.ToLower() == "true") isStartScene = true;
+            }
 
             string mainFolder = Path.GetDirectoryName(Settings.sceneOverviewFile);
-            LoadScene(sceneName, mainFolder, scenePath);
+            LoadScene(sceneName, mainFolder, scenePath, isStartScene);
         }
         return true;
     }
 
-    void LoadScene(string sceneName, string mainFolder, string scenePath)
+    void LoadScene(string sceneName, string mainFolder, string scenePath, bool isStartScene)
     {
         var sceneXML = XDocument.Load(mainFolder + "/" + scenePath);
 
@@ -76,7 +83,7 @@ public class SceneManager : MonoBehaviour
             sceneElements.Add(se);
         }
 
-        Scene sceneObj = new Scene(type == "video" ? Scene.MediaType.Video : Scene.MediaType.Photo, sceneName, source, sceneElements);
+        Scene sceneObj = new Scene(type == "video" ? Scene.MediaType.Video : Scene.MediaType.Photo, sceneName, source, sceneElements, isStartScene);
 
         sceneList.Add(sceneName, sceneObj);
     }

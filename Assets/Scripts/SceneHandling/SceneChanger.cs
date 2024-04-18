@@ -35,10 +35,24 @@ public class SceneChanger : MonoBehaviour
         Application.Quit();
     }
 
-    public void ToMainScreen()
+    public void ToMainScene()
     {
         photoMaterial.mainTexture = mainScreenImage;
         SwitchToFoto();
+    }
+
+    public void ToStartScene()
+    {
+        bool foundScene = false;
+        foreach (var scene in sm.sceneList)
+        {
+            if (scene.Value.IsStartScene)
+            {
+                foundScene = true;
+                SwitchSceneAnimation(scene.Value);
+            }
+        }
+        if (!foundScene) Debug.LogWarning("There is no start scene specified");
     }
 
 
@@ -105,7 +119,6 @@ public class SceneChanger : MonoBehaviour
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
         Interactable interactable = text.GetComponent<Interactable>();
-        Debug.Log(sceneElement.action);
         interactable.OnInteract.AddListener(() =>
         {
             ActionParser(sceneElement.action);

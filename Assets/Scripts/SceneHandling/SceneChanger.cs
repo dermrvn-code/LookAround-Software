@@ -92,7 +92,6 @@ public class SceneChanger : MonoBehaviour
         }
     }
 
-    public TMP_Text textPrefab;
     public void LoadSceneElements(List<SceneElement> sceneElements)
     {
 
@@ -107,9 +106,15 @@ public class SceneChanger : MonoBehaviour
             {
                 LoadTextElement(sceneElement);
             }
+            else if (sceneElement.type == SceneElement.ElementType.Textbox)
+            {
+                LoadTextboxElement(sceneElement);
+            }
         }
     }
 
+    [SerializeField]
+    TMP_Text textPrefab;
     public void LoadTextElement(SceneElement sceneElement)
     {
         var text = Instantiate(textPrefab, sceneElementsContainer.transform);
@@ -123,6 +128,49 @@ public class SceneChanger : MonoBehaviour
         {
             ActionParser(sceneElement.action);
         });
+    }
+
+    [SerializeField]
+    GameObject textboxPrefab;
+    public Sprite info, warning, question, play;
+
+    public void LoadTextboxElement(SceneElement sceneElement)
+    {
+        var text = Instantiate(textboxPrefab, sceneElementsContainer.transform);
+        var tmptext = text.GetComponentInChildren<TMP_Text>();
+        var spriteRenderer = text.GetComponentInChildren<SpriteRenderer>();
+        tmptext.text = sceneElement.text;
+        DomePosition dp = text.GetComponent<DomePosition>();
+        dp.position.x = sceneElement.x;
+        dp.position.y = sceneElement.y;
+
+        Sprite sprite;
+        switch (sceneElement.icon)
+        {
+            case "info":
+                sprite = info;
+                break;
+
+            case "warning":
+                sprite = warning;
+                break;
+
+            case "question":
+                sprite = question;
+                break;
+
+            case "play":
+                sprite = play;
+                break;
+
+            default:
+                sprite = null;
+                break;
+        }
+        if (sprite != null)
+        {
+            spriteRenderer.sprite = sprite;
+        }
     }
 
     public void ActionParser(string action)

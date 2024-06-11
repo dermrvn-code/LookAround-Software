@@ -74,13 +74,30 @@ public class SceneManager : MonoBehaviour
         foreach (var element in elements)
         {
             string elementType = element.Attribute("type").Value;
-            string text = element.Value;
+            string text = element.Value.Trim();
             int x = int.Parse(element.Attribute("x").Value);
             int y = int.Parse(element.Attribute("y").Value);
-            string action = element.Attribute("action").Value;
 
-            SceneElement se = new SceneElement(elementType == "text" ? SceneElement.ElementType.Text : SceneElement.ElementType.Image, text, x, y, action);
-            sceneElements.Add(se);
+
+            SceneElement se;
+            if (elementType == "text")
+            {
+                string action = element.Attribute("action").Value;
+                se = new SceneElement(SceneElement.ElementType.Text, text, x, y, action);
+            }
+            else if (elementType == "textbox")
+            {
+                string icon = element.Attribute("icon").Value;
+                se = new SceneElement(SceneElement.ElementType.Textbox, text, x, y, null, icon);
+            }
+            else
+            {
+                se = null;
+            }
+            if (se != null)
+            {
+                sceneElements.Add(se);
+            }
         }
 
         Scene sceneObj = new Scene(type == "video" ? Scene.MediaType.Video : Scene.MediaType.Photo, sceneName, source, sceneElements, isStartScene);

@@ -7,9 +7,8 @@ public class DomePosition : MonoBehaviour
 {
 
     private Transform elementTransform;
+
     public Vector2 position;
-    public float x;
-    public float y;
     public int distance = 10;
 
 
@@ -18,19 +17,17 @@ public class DomePosition : MonoBehaviour
         elementTransform = GetComponent<Transform>();
     }
 
-    Vector2 currentPosition;
+
     void Update()
     {
-        if (currentPosition == position) return;
-        currentPosition = position;
-        Vector3 cartesianPosition = PolarToCartesian(currentPosition);
+        Vector3 cartesianPosition = PolarToCartesian(position);
         SetRectPosition(cartesianPosition);
     }
 
-    void SetRectPosition(Vector3 position)
+    void SetRectPosition(Vector3 newPosition)
     {
-        elementTransform.localPosition = position;
-        elementTransform.rotation = Quaternion.Euler(y, x, 1);
+        elementTransform.localPosition = newPosition;
+        elementTransform.rotation = Quaternion.Euler(position.y, position.x, 0);
     }
 
     public Vector3 PolarToCartesian(Vector2 polar)

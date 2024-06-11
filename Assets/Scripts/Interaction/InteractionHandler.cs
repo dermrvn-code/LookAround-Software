@@ -7,10 +7,10 @@ public class InteractionHandler : MonoBehaviour
 {
 
     RaycastHit hit;
-    Interactable target;
+    Hoverable target;
     EyesHandler eyesHandler;
 
-    Dictionary<DomePosition, Interactable> elements = new Dictionary<DomePosition, Interactable>();
+    Dictionary<DomePosition, Hoverable> elements = new Dictionary<DomePosition, Hoverable>();
 
     [SerializeField]
     LayerMask layer;
@@ -24,32 +24,36 @@ public class InteractionHandler : MonoBehaviour
 
     void UpdateElements()
     {
-        elements = new Dictionary<DomePosition, Interactable>();
+        updateElementsNextFrame = false;
+        elements = new Dictionary<DomePosition, Hoverable>();
         target = null;
         var domeElements = FindObjectsOfType<DomePosition>();
         foreach (var domeElement in domeElements)
         {
-            Interactable elementToAdd;
-            if (domeElement.GetComponent<Interactable>() != null)
+            Hoverable elementToAdd;
+            if (domeElement.GetComponent<Hoverable>() != null)
             {
-                elementToAdd = domeElement.GetComponent<Interactable>();
+                elementToAdd = domeElement.GetComponent<Hoverable>();
             }
-            else if (domeElement.GetComponentInChildren<Interactable>() != null)
+            else if (domeElement.GetComponentInChildren<Hoverable>() != null)
             {
-                elementToAdd = domeElement.GetComponentInChildren<Interactable>();
+                elementToAdd = domeElement.GetComponentInChildren<Hoverable>();
             }
             else
             {
-                return;
+                continue;
             }
             elements.Add(domeElement, elementToAdd);
         }
-        updateElementsNextFrame = false;
     }
 
     public void Interact()
     {
-        target?.Interact();
+        Interactable interactableTarget;
+        if (target.TryGetComponent<Interactable>(out interactableTarget))
+        {
+            interactableTarget.Interact();
+        }
     }
 
 
@@ -57,19 +61,24 @@ public class InteractionHandler : MonoBehaviour
     float oldRotation = -20;
     bool checkedElements = false;
     int offset = 10;
+    bool foundTarget = false;
     void Update()
     {
         if (updateElementsNextFrame) UpdateElements();
 
         if (eyesHandler.rotation != oldRotation)
         {
+            if (!foundTarget)
+            {
+                target?.Unhighlight();
+                target = null;
+            }
             oldRotation = eyesHandler.rotation;
-            target?.Unhighlight();
-            target = null;
             checkedElements = false;
         }
         else if (!checkedElements)
         {
+            foundTarget = false;
             checkedElements = true;
             if (elements.Count > 0)
             {
@@ -84,6 +93,7 @@ public class InteractionHandler : MonoBehaviour
                     if (leftOffset < element.Key.position.x && element.Key.position.x < (oldRotation + offset) % 360)
                     {
                         target = element.Value;
+                        foundTarget = true;
                     }
                 }
                 target?.Highlight();

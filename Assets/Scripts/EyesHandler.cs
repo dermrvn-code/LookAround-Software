@@ -15,7 +15,9 @@ public class EyesHandler : MonoBehaviour
     public float heightOffset = 0f;
     public float height = 0f;
 
-    private int zoom = 60;
+    public int zoom = 60;
+    private int minZoom = 25;
+    private int maxZoom = 100;
 
 
     void Awake()
@@ -28,6 +30,7 @@ public class EyesHandler : MonoBehaviour
         UpdateSpacing();
         UpdateRotation();
         UpdateHeight();
+        UpdateZoom();
     }
 
     void OnApplicationQuit()
@@ -54,10 +57,21 @@ public class EyesHandler : MonoBehaviour
         gameObject.transform.localPosition = new Vector3(0, height + heightOffset, 0);
     }
 
+    void UpdateZoom(){
+        if(zoom > 100) zoom = 100;
+        if(zoom < 0) zoom = 0;
+        SetZoom((int)map(zoom,0,100,maxZoom,minZoom));
+    }
+
+    float map(float s, float a1, float a2, float b1, float b2)
+    {
+        return b1 + (s-a1)*(b2-b1)/(a2-a1);
+    }
+
 
     public void ZoomIn()
     {
-        if (zoom <= 25) return;
+        if (zoom <= minZoom) return;
         zoom = zoom - 1;
         SetZoom(zoom);
     }
@@ -84,7 +98,6 @@ public class EyesHandler : MonoBehaviour
 
     public void SetZoom(int zoom)
     {
-        this.zoom = zoom;
         leftEye.fieldOfView = zoom;
         rightEye.fieldOfView = zoom;
     }

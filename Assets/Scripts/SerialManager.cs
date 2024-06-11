@@ -62,8 +62,6 @@ public class SerialManager : MonoBehaviour
         string tempDump = serial.ReadLine();
         if (tempDump != "")
         {
-            DebugConsole.Log(tempDump.Replace("\n", ""));
-
             if (tempDump.Contains("#"))
             {
                 tempDump = tempDump.Split("#")[0];
@@ -73,7 +71,7 @@ public class SerialManager : MonoBehaviour
 
                 string[] splittedDump = dump.Split(';');
 
-                if (splittedDump.Length == 4)
+                if (splittedDump.Length == 5)
                 {
                     ExecuteData(splittedDump);
                 }
@@ -84,21 +82,15 @@ public class SerialManager : MonoBehaviour
     public void ExecuteData(string[] data)
     {
         int rotation = int.Parse(data[0]);
-        bool zooming = int.Parse(data[1]) == 1 ? true : false;
-        bool interact1Pressed = int.Parse(data[2]) == 1 ? true : false;
-        bool interact2Pressed = int.Parse(data[3]) == 1 ? true : false;
-        //float temperature = float.Parse(data[4]);
+        bool interact1Pressed = int.Parse(data[1]) == 1 ? true : false;
+        bool interact2Pressed = int.Parse(data[2]) == 1 ? true : false;
+        int zoom = int.Parse(data[3]);
+
+        DebugConsole.LogValues(rotation, interact1Pressed, interact2Pressed, zoom);
 
         eyes.rotation = rotation;
+        eyes.zoom = zoom;
 
-        if (zooming)
-        {
-            eyes.ZoomIn();
-        }
-        else
-        {
-            eyes.ZoomOut();
-        }
 
         if (interact1Pressed)
         {
@@ -150,7 +142,7 @@ public class SerialManager : MonoBehaviour
             // Open up our serial connection
             serial.Open();
 
-            ConnectionText.text = "Connected {port}";
+            ConnectionText.text = "Connected to " + port;
         }
         catch (Exception e)
         {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public abstract class Interactable : MonoBehaviour
+public abstract class Interactable : Hoverable
 {
     // Start is called before the first frame update
     public UnityEvent OnInteract;
@@ -13,12 +13,6 @@ public abstract class Interactable : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("Interactable");
         Setup();
     }
-
-    public abstract void Setup();
-
-    public abstract void Highlight();
-
-    public abstract void Unhighlight();
 
     public void Interact()
     {

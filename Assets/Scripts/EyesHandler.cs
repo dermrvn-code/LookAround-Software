@@ -23,6 +23,7 @@ public class EyesHandler : MonoBehaviour
     void Awake()
     {
         LoadValues();
+        zoom = minZoom;
     }
 
     void Update()
@@ -31,11 +32,34 @@ public class EyesHandler : MonoBehaviour
         UpdateRotation();
         UpdateHeight();
         UpdateZoom();
+        UpdateSplitScreen();
     }
 
     void OnApplicationQuit()
     {
         SaveValues();
+    }
+
+
+    bool splitScreen = true;
+
+    public void ToggleSplitScreen()
+    {
+        splitScreen = !splitScreen;
+    }
+    void UpdateSplitScreen()
+    {
+        if (splitScreen)
+        {
+            leftEye.rect = new Rect(0, 0, 0.5f, 1);
+            rightEye.rect = new Rect(0.5f, 0, 0.5f, 1);
+        }
+        else
+        {
+            leftEye.rect = new Rect(0, 0, 1, 1);
+            rightEye.rect = new Rect(0.5f, 0, 0, 0);
+        }
+
     }
 
 
@@ -57,15 +81,16 @@ public class EyesHandler : MonoBehaviour
         gameObject.transform.localPosition = new Vector3(0, height + heightOffset, 0);
     }
 
-    void UpdateZoom(){
-        if(zoom > 100) zoom = 100;
-        if(zoom < 0) zoom = 0;
-        SetZoom((int)map(zoom,0,100,maxZoom,minZoom));
+    void UpdateZoom()
+    {
+        if (zoom > 100) zoom = 100;
+        if (zoom < 0) zoom = 0;
+        SetZoom((int)map(zoom, 0, 100, maxZoom, minZoom));
     }
 
     float map(float s, float a1, float a2, float b1, float b2)
     {
-        return b1 + (s-a1)*(b2-b1)/(a2-a1);
+        return b1 + (s - a1) * (b2 - b1) / (a2 - a1);
     }
 
 

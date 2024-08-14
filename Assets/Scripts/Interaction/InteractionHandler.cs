@@ -6,7 +6,6 @@ using UnityEngine;
 public class InteractionHandler : MonoBehaviour
 {
 
-    RaycastHit hit;
     Hoverable target;
     EyesHandler eyesHandler;
 
@@ -49,6 +48,7 @@ public class InteractionHandler : MonoBehaviour
 
     public void Interact()
     {
+        if (target == null) return;
         Interactable interactableTarget;
         if (target.TryGetComponent<Interactable>(out interactableTarget))
         {
@@ -60,7 +60,7 @@ public class InteractionHandler : MonoBehaviour
     // Update is called once per frame
     float oldRotation = -20;
     bool checkedElements = false;
-    int offset = 10;
+    int offset = 5;
     bool foundTarget = false;
     void Update()
     {

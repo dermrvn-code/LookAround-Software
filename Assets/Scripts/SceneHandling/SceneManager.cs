@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 
@@ -7,35 +8,68 @@ public class SceneManager : MonoBehaviour
 {
 
     SceneChanger sc;
+    Settings settings;
 
+    XDocument worldOverview;
     XDocument sceneOverview;
 
     public Dictionary<string, Scene> sceneList = new Dictionary<string, Scene>();
 
     void Start()
     {
+        settings = FindObjectOfType<Settings>();
+
         sc = FindObjectOfType<SceneChanger>();
         sc.ToMainScene();
 
 
-        bool isLoaded = LoadSceneOverview();
+        bool isLoaded = LoadWorldOverview();
 
         if (!isLoaded)
         {
-            Debug.LogWarning("The scene overview file is not valid");
+            Debug.LogWarning("The world overview file is not valid");
+            return;
         }
-        else if (Settings.loadStartSceenOnBoot)
+        else if (Settings.loadWorldOnBoot)
         {
-            sc.ToStartScene();
+            sc.LoadWorld(false);
         }
+        Debug.Log("World overview loaded!");
     }
 
 
-    bool LoadSceneOverview()
+    public static Dictionary<string, string> worldsList = new Dictionary<string, string>();
+    public static string currentWorld = "";
+    bool LoadWorldOverview()
     {
-        if (!File.Exists(Settings.sceneOverviewFile)) return false;
-        sceneOverview = XDocument.Load(Settings.sceneOverviewFile);
+        if (!File.Exists(Settings.worldsOverviewFile)) return false;
+        worldOverview = XDocument.Load(Settings.worldsOverviewFile);
+        var worlds = worldOverview.Descendants("World");
+
+        worldsList = new Dictionary<string, string>();
+        // Loop through every Scene
+        foreach (var world in worlds)
+        {
+            string path = world.Attribute("path").Value;
+            string name = world.Attribute("name").Value;
+
+            worldsList.Add(name, path);
+        }
+        if (currentWorld == "") currentWorld = worldsList.First().Key;
+        settings.PopulateWorldDropdown();
+        return true;
+    }
+
+
+    public void LoadSceneOverview(string path)
+    {
+        sceneList = new Dictionary<string, Scene>();
+        string mainFolder = Path.GetDirectoryName(Settings.worldsOverviewFile);
+        string sceneOverviewPath = Path.Combine(mainFolder, path);
+        if (!File.Exists(sceneOverviewPath)) Debug.LogWarning("The scene overview file does not exist: " + sceneOverviewPath);
+        sceneOverview = XDocument.Load(sceneOverviewPath);
         var scenes = sceneOverview.Descendants("Scene");
+        Debug.Log("Loading Scenes from: " + sceneOverviewPath);
 
         // Loop through every Scene
         foreach (var scene in scenes)
@@ -49,10 +83,9 @@ public class SceneManager : MonoBehaviour
                 if (startScene.Value.ToLower() == "true") isStartScene = true;
             }
 
-            string mainFolder = Path.GetDirectoryName(Settings.sceneOverviewFile);
-            LoadScene(sceneName, mainFolder, scenePath, isStartScene);
+            string sceneFolder = Path.GetDirectoryName(sceneOverviewPath);
+            LoadScene(sceneName, sceneFolder, scenePath, isStartScene);
         }
-        return true;
     }
 
     void LoadScene(string sceneName, string mainFolder, string scenePath, bool isStartScene)
@@ -62,6 +95,18 @@ public class SceneManager : MonoBehaviour
         var sceneTag = sceneXML.Element("Scene");
         string type = sceneTag.Attribute("type").Value;
         string source = sceneTag.Attribute("source").Value;
+
+
+        float xOffset = 0;
+        float yOffset = 0;
+        if (sceneTag.Attribute("xOffset") != null)
+        {
+            xOffset = float.Parse(sceneTag.Attribute("xOffset").Value);
+        }
+        if (sceneTag.Attribute("yOffset") != null)
+        {
+            yOffset = float.Parse(sceneTag.Attribute("yOffset").Value);
+        }
 
         string sceneFolder = Path.GetDirectoryName(mainFolder + "/" + scenePath);
         source = Path.Combine(sceneFolder, source);
@@ -74,21 +119,62 @@ public class SceneManager : MonoBehaviour
         foreach (var element in elements)
         {
             string elementType = element.Attribute("type").Value;
+
             string text = element.Value.Trim();
+            if (text == "")
+            {
+                text = "No Text given";
+            }
+
             int x = int.Parse(element.Attribute("x").Value);
             int y = int.Parse(element.Attribute("y").Value);
+
+            int distance = 0;
+            if (element.Attribute("distance") != null)
+            {
+                distance = int.Parse(element.Attribute("distance").Value);
+            }
+
+            int xRotationOffset = 0;
+            if (element.Attribute("xRotationOffset") != null)
+            {
+                xRotationOffset = int.Parse(element.Attribute("xRotationOffset").Value);
+            }
 
 
             SceneElement se;
             if (elementType == "text")
             {
                 string action = element.Attribute("action").Value;
-                se = new SceneElement(SceneElement.ElementType.Text, text, x, y, action);
+                se = new SceneElement(
+                        SceneElement.ElementType.Text,
+                        text, x, y,
+                        distance, xRotationOffset,
+                        action: action
+                    );
             }
             else if (elementType == "textbox")
             {
                 string icon = element.Attribute("icon").Value;
-                se = new SceneElement(SceneElement.ElementType.Textbox, text, x, y, null, icon);
+                se = new SceneElement(
+                        SceneElement.ElementType.Textbox,
+                        text, x, y,
+                        distance, xRotationOffset,
+                        icon: icon
+                    );
+            }
+            else if (elementType == "directionArrow")
+            {
+                string action = element.Attribute("action").Value;
+                int rotation = int.Parse(element.Attribute("rotation").Value);
+
+                se = new SceneElement(
+                        SceneElement.ElementType.DirectionArrow,
+                        text, x, y,
+                        distance, xRotationOffset,
+                        action: action, rotation: rotation
+                    );
+
             }
             else
             {
@@ -100,7 +186,7 @@ public class SceneManager : MonoBehaviour
             }
         }
 
-        Scene sceneObj = new Scene(type == "video" ? Scene.MediaType.Video : Scene.MediaType.Photo, sceneName, source, sceneElements, isStartScene);
+        Scene sceneObj = new Scene(type == "video" ? Scene.MediaType.Video : Scene.MediaType.Photo, sceneName, source, sceneElements, isStartScene, xOffset, yOffset);
 
         sceneList.Add(sceneName, sceneObj);
     }

@@ -7,7 +7,6 @@ public class HardwareEmulator : MonoBehaviour
     public InteractionHandler interaction;
 
 
-
     void Start()
     {
         if (eyes == null) Debug.LogError("No eyes were given in the Hardware Emulator");
@@ -19,19 +18,59 @@ public class HardwareEmulator : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            eyes.LeftMove();
+            if (!settings.IsVisible)
+            {
+                eyes.LeftMove();
+            }
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
-            eyes.RightMove();
+            if (!settings.IsVisible)
+            {
+                eyes.RightMove();
+            }
         }
-        if (Input.GetKey(KeyCode.UpArrow))
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            eyes.ZoomIn();
+            if (settings.IsVisible)
+            {
+                settings.ShiftElement(-1);
+            }
         }
-        else if (Input.GetKey(KeyCode.DownArrow))
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            eyes.ZoomOut();
+            if (settings.IsVisible)
+            {
+                settings.ShiftElement(1);
+            }
+        }
+        if (Input.GetKey(KeyCode.DownArrow))
+        {
+            if (!settings.IsVisible)
+            {
+                eyes.ZoomIn();
+            }
+        }
+        else if (Input.GetKey(KeyCode.UpArrow))
+        {
+            if (!settings.IsVisible)
+            {
+                eyes.ZoomOut();
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            if (settings.IsVisible)
+            {
+                settings.MoveSelector(1);
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            if (settings.IsVisible)
+            {
+                settings.MoveSelector(-1);
+            }
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -39,11 +78,22 @@ public class HardwareEmulator : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            interaction.Interact();
+            if (settings.IsVisible)
+            {
+                settings.SelectElement();
+            }
+            else
+            {
+                interaction.Interact();
+            }
         }
         if (Input.GetKeyDown(KeyCode.C))
         {
             DebugConsole.ToggleActivation();
+        }
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            eyes.ToggleSplitScreen();
         }
     }
 }

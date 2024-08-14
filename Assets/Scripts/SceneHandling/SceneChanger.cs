@@ -23,11 +23,13 @@ public class SceneChanger : MonoBehaviour
     public VideoPlayer vp;
     SceneManager sm;
     InteractionHandler ih;
+    Settings settings;
 
     void Start()
     {
         sm = FindObjectOfType<SceneManager>();
         ih = FindObjectOfType<InteractionHandler>();
+        settings = FindObjectOfType<Settings>();
     }
 
     public void Quit()
@@ -41,7 +43,21 @@ public class SceneChanger : MonoBehaviour
         SwitchToFoto();
     }
 
-    public void ToStartScene()
+    public void LoadWorld(bool animate = true)
+    {
+        string path = "";
+        SceneManager.worldsList.TryGetValue(SceneManager.currentWorld, out path);
+        if (path == "")
+        {
+            Debug.LogWarning("The current world is not in the worlds list");
+            return;
+        }
+        sm.LoadSceneOverview(path);
+        Debug.Log("Loading World: " + path);
+        ToStartScene(animate);
+    }
+
+    public void ToStartScene(bool animate = true)
     {
         bool foundScene = false;
         foreach (var scene in sm.sceneList)
@@ -49,7 +65,14 @@ public class SceneChanger : MonoBehaviour
             if (scene.Value.IsStartScene)
             {
                 foundScene = true;
-                SwitchSceneAnimation(scene.Value);
+                if (animate)
+                {
+                    SwitchSceneAnimation(scene.Value);
+                }
+                else
+                {
+                    SwitchScene(scene.Value);
+                }
             }
         }
         if (!foundScene) Debug.LogWarning("There is no start scene specified");
@@ -80,6 +103,7 @@ public class SceneChanger : MonoBehaviour
         if (scene.Type == Scene.MediaType.Video)
         {
             SwitchToVideo();
+            videoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
             vp.url = scene.Source;
         }
         else
@@ -87,9 +111,10 @@ public class SceneChanger : MonoBehaviour
             Texture2D tex = new Texture2D(2, 2);
             tex.LoadImage(File.ReadAllBytes(scene.Source));
             photoMaterial.mainTexture = tex;
-
+            photoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
             SwitchToFoto();
         }
+        settings.CloseView();
     }
 
     public void LoadSceneElements(List<SceneElement> sceneElements)
@@ -109,6 +134,10 @@ public class SceneChanger : MonoBehaviour
             else if (sceneElement.type == SceneElement.ElementType.Textbox)
             {
                 LoadTextboxElement(sceneElement);
+            }
+            else if (sceneElement.type == SceneElement.ElementType.DirectionArrow)
+            {
+                LoadDirectionArrow(sceneElement);
             }
         }
     }
@@ -171,6 +200,26 @@ public class SceneChanger : MonoBehaviour
         {
             spriteRenderer.sprite = sprite;
         }
+    }
+
+
+    [SerializeField]
+    GameObject arrowPrefab;
+    public void LoadDirectionArrow(SceneElement sceneElement)
+    {
+        var arrow = Instantiate(arrowPrefab, sceneElementsContainer.transform);
+
+        arrow.GetComponentInChildren<InteractableArrow>().SetRotation(sceneElement.rotation);
+
+        DomePosition dp = arrow.GetComponent<DomePosition>();
+        dp.position.x = sceneElement.x;
+        dp.position.y = sceneElement.y;
+
+        Interactable interactable = arrow.GetComponent<Interactable>();
+        interactable.OnInteract.AddListener(() =>
+        {
+            ActionParser(sceneElement.action);
+        });
     }
 
     public void ActionParser(string action)

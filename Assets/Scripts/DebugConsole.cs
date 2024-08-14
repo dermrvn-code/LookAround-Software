@@ -1,30 +1,23 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using TMPro;
 using UnityEngine;
 
 public class DebugConsole : MonoBehaviour
 {
-    public static TMP_Text consoleText;
-
-    public static TMP_Text hudText;
+    public static Console[] consoleHudManager;
 
     private static bool consoleActive = false;
 
     void Start()
     {
-        consoleText = GetComponent<TMP_Text>();
-        hudText = GameObject.Find("HUD").GetComponent<TMP_Text>();
-
+        consoleHudManager = FindObjectsOfType<Console>();
     }
 
     public static void ToggleActivation()
     {
         consoleActive = !consoleActive;
-        consoleText.enabled = consoleActive;
-        hudText.enabled = consoleActive;
+        foreach (var chm in consoleHudManager)
+        {
+            chm.SetActive(consoleActive);
+        }
 
         if (consoleActive) Log("Console activated");
     }
@@ -33,15 +26,10 @@ public class DebugConsole : MonoBehaviour
     {
         if (consoleActive)
         {
-            var clearAfterLines = 25;
-            var oldText = consoleText.text;
-            var oldLines = oldText.Split("\n");
-            if (oldLines.Length > clearAfterLines)
+            foreach (var chm in consoleHudManager)
             {
-                oldLines = oldLines.Skip(clearAfterLines).ToArray();
-                oldText = string.Join("\n", oldLines);
+                chm.Log(text);
             }
-            consoleText.text = oldText + "\n" + "[" + DateTime.Now.ToString() + "] " + text;
         }
     }
 
@@ -50,10 +38,10 @@ public class DebugConsole : MonoBehaviour
     {
         if (consoleActive)
         {
-            hudText.text = "Rotation: " + rotation + "\n";
-            hudText.text += "Zoom: " + zoom + "\n";
-            hudText.text += "Interaction 1: " + interaction1 + "\n";
-            hudText.text += "Interaction 2: " + interaction2;
+            foreach (var chm in consoleHudManager)
+            {
+                chm.LogValues(rotation, interaction1, interaction2, zoom);
+            }
         }
     }
 }

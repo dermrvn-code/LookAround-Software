@@ -10,6 +10,7 @@ public class DomePosition : MonoBehaviour
 
     public Vector2 position;
     public int distance = 10;
+    public float xRotOffset = 0;
 
 
     void Start()
@@ -27,7 +28,7 @@ public class DomePosition : MonoBehaviour
     void SetRectPosition(Vector3 newPosition)
     {
         elementTransform.localPosition = newPosition;
-        elementTransform.rotation = Quaternion.Euler(position.y, position.x, 0);
+        elementTransform.rotation = Quaternion.Euler(position.y + xRotOffset, position.x, 0);
     }
 
     public Vector3 PolarToCartesian(Vector2 polar)

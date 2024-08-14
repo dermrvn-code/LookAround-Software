@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SFB;
 using TMPro;
-using UnityEditor;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,28 +20,43 @@ public class Settings : MonoBehaviour
     Slider heightOffset;
 
     [SerializeField]
-    TMP_Text sceneFolderPathText;
+    TMP_Text worldFolderPathText;
 
     [SerializeField]
-    Toggle loadStartScreenOnBootToggle;
+    Toggle loadWorldOnBootToggle;
+
+    [SerializeField]
+    TMP_Dropdown currentWorldDropdown;
 
     [SerializeField]
     PopUp popupPrefab;
-    bool visible = false;
-    public static string sceneOverviewFile = "";
-    public static bool loadStartSceenOnBoot = false;
+    public static string worldsOverviewFile = "";
+    public static bool loadWorldOnBoot = false;
+
+    [SerializeField]
+    GameObject settingsList;
+
+    List<float[]> settingsElements;
+    List<GameObject> settingsElementsGameObjects;
+
+    [SerializeField]
+    GameObject selector;
+    Image selectorImage;
+    Color selectorColor;
+    [SerializeField]
+    Color selectedColor;
+    RectTransform selectorRect;
 
 
     void Awake()
     {
         LoadValues();
-        sceneFolderPathText.text = sceneOverviewFile;
-        loadStartScreenOnBootToggle.isOn = loadStartSceenOnBoot;
+        worldFolderPathText.text = worldsOverviewFile;
+        loadWorldOnBootToggle.isOn = loadWorldOnBoot;
     }
 
     void Start()
     {
-        ToggleView(!visible);
         if (eyes == null)
         {
             Debug.LogError("No eyes were given in the Hardware SettingsWrap");
@@ -49,7 +64,110 @@ public class Settings : MonoBehaviour
         }
         eyeSpacing.value = eyes.eyeSpacing;
         heightOffset.value = eyes.heightOffset;
+        ToggleView(!isVisible);
     }
+
+    [SerializeField]
+    int selectedElement = 0;
+    void Update()
+    {
+        if (loadedElements)
+        {
+            if (selectedElement < 0 || selectedElement >= settingsElements.Count) return;
+
+            selectorRect.sizeDelta = new Vector2(0, settingsElements[selectedElement][0] * 1.2f);
+            selectorRect.anchoredPosition = new Vector2(selectorRect.anchoredPosition.x, settingsElements[selectedElement][1]);
+        }
+    }
+
+    bool loadedElements = false;
+
+    [SerializeField]
+    int totalHeight = 0;
+    IEnumerator LoadSettingsElements()
+    {
+        yield return new WaitForEndOfFrame();
+        if (loadedElements) yield break;
+        settingsElements = new List<float[]>();
+        settingsElementsGameObjects = new List<GameObject>();
+        var offset = settingsList.GetComponent<RectTransform>().sizeDelta.y;
+        foreach (Transform child in settingsList.transform)
+        {
+            if (child.GetComponentInChildren<UIInteractable>() == null) continue;
+            var trans = child.gameObject.GetComponent<RectTransform>();
+            var height = trans.rect.height;
+            totalHeight += (int)height;
+            var array = new float[2] { height, trans.anchoredPosition.y + offset };
+            settingsElements.Add(array);
+            settingsElementsGameObjects.Add(child.gameObject);
+        }
+
+        selectorRect = selector.GetComponent<RectTransform>();
+        selectorImage = selector.GetComponent<Image>();
+        selectorColor = selectorImage.color;
+        loadedElements = true;
+    }
+
+    [SerializeField]
+    ScrollRect scrollbar;
+    public void MoveSelector(int direction)
+    {
+        int newPos = selectedElement + direction;
+        selectedElement = newPos >= 0 && newPos < settingsElements.Count ? newPos : selectedElement;
+
+        var dimensions = settingsElements[selectedElement];
+        var y = 1 - Math.Abs(dimensions[1]) / totalHeight + 0.3f;
+
+        scrollbar.normalizedPosition = new Vector2(0f, y);
+        currElement = null;
+        selectorImage.color = selectorColor;
+    }
+
+    bool isSelected = false;
+    UIInteractable currElement;
+    public void SelectElement()
+    {
+        if (!isSelected)
+        {
+            GameObject element = settingsElementsGameObjects[selectedElement];
+
+            currElement = element.GetComponentInChildren<UIInteractable>();
+
+            selectorImage.color = selectedColor;
+            isSelected = true;
+
+            if (currElement != null)
+            {
+                bool unselect = currElement.Select();
+
+                if (unselect)
+                {
+                    UnselectElement();
+                }
+            }
+        }
+        else
+        {
+            UnselectElement();
+        }
+    }
+
+    void UnselectElement()
+    {
+        isSelected = false;
+        selectorImage.color = selectorColor;
+        currElement = null;
+    }
+
+    public void ShiftElement(int direction)
+    {
+        if (currElement != null)
+        {
+            currElement.ShiftElement(direction);
+        }
+    }
+
+
 
     void OnApplicationQuit()
     {
@@ -58,16 +176,17 @@ public class Settings : MonoBehaviour
 
     public void UpdateFilePath(string path)
     {
-        sceneOverviewFile = path;
-        sceneFolderPathText.text = sceneOverviewFile;
+        worldsOverviewFile = path;
+        worldFolderPathText.text = worldsOverviewFile;
     }
 
-    public void UpdateLoadStartSceenOnBoot(bool value)
+    public void UpdateLoadWorldOnBoot(bool value)
     {
-        loadStartSceenOnBoot = value;
+        loadWorldOnBoot = value;
     }
 
-    public void SelectNewScenesFolder()
+
+    public void SelectNewWorldFolder()
     {
         ExtensionFilter[] extensionList = new[] {
             new ExtensionFilter("XML", "xml")
@@ -82,9 +201,11 @@ public class Settings : MonoBehaviour
         }
     }
 
+
+
     public void ChangeEyeSpacing(float spacing)
     {
-        eyes.eyeSpacing = spacing;
+        eyes.eyeSpacing = spacing / 10;
     }
 
     public void ChangeOffsetHeight(float offset)
@@ -92,13 +213,55 @@ public class Settings : MonoBehaviour
         eyes.heightOffset = offset;
     }
 
+    public void PopulateWorldDropdown()
+    {
+        currentWorldDropdown.ClearOptions();
+        int indexOfCurrentWorld = 0;
+        List<string> options = new List<string>();
+
+        int i = 0;
+        foreach (var world in SceneManager.worldsList)
+        {
+            if (world.Key == SceneManager.currentWorld) indexOfCurrentWorld = i;
+            options.Add(world.Key);
+            i++;
+        }
+        currentWorldDropdown.AddOptions(options);
+        currentWorldDropdown.value = indexOfCurrentWorld;
+    }
+
+    public void UpdateCurrentWorld(int value)
+    {
+        string world = currentWorldDropdown.options[value].text;
+        SceneManager.currentWorld = world;
+    }
+
+    private void LoadValues()
+    {
+        worldsOverviewFile = PlayerPrefs.GetString("sceneOverviewFile", "");
+        loadWorldOnBoot = PlayerPrefs.GetInt("loadStartSceenOnBoot", 0) == 1 ? true : false;
+        SceneManager.currentWorld = PlayerPrefs.GetString("currentWorld", "");
+    }
+
+    private void SaveValues()
+    {
+        PlayerPrefs.SetString("sceneOverviewFile", worldsOverviewFile);
+        PlayerPrefs.SetInt("loadStartSceenOnBoot", loadWorldOnBoot ? 1 : 0);
+        PlayerPrefs.SetString("currentWorld", SceneManager.currentWorld);
+        PlayerPrefs.Save();
+    }
+
+    bool isVisible = false;
+    public bool IsVisible { get { return isVisible; } }
+
     public void CloseView()
     {
         foreach (Transform child in transform)
         {
             child.gameObject.SetActive(false);
         }
-        visible = false;
+        isVisible = false;
+        SaveValues();
     }
 
     public void OpenView()
@@ -107,15 +270,16 @@ public class Settings : MonoBehaviour
         {
             child.gameObject.SetActive(true);
         }
-        visible = true;
+        isVisible = true;
+        StartCoroutine(LoadSettingsElements());
     }
 
     public void ToggleView()
     {
-        ToggleView(visible);
+        ToggleView(isVisible);
     }
 
-    private void ToggleView(bool visible)
+    void ToggleView(bool visible)
     {
         if (visible)
         {
@@ -123,19 +287,6 @@ public class Settings : MonoBehaviour
             return;
         }
         OpenView();
-    }
-
-    private void LoadValues()
-    {
-        sceneOverviewFile = PlayerPrefs.GetString("sceneOverviewFile", "");
-        loadStartSceenOnBoot = PlayerPrefs.GetInt("loadStartSceenOnBoot", 0) == 1 ? true : false;
-    }
-
-    private void SaveValues()
-    {
-        PlayerPrefs.SetString("sceneOverviewFile", sceneOverviewFile);
-        PlayerPrefs.SetInt("loadStartSceenOnBoot", loadStartSceenOnBoot ? 1 : 0);
-        PlayerPrefs.Save();
     }
 
 }

@@ -121,7 +121,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6374664865688181091}
+      - m_Target: {fileID: 4227949084390005864}
         m_TargetAssemblyTypeName: PopUp, Assembly-CSharp
         m_MethodName: Close
         m_Mode: 1
@@ -279,7 +279,7 @@ GameObject:
   - component: {fileID: 4564405612918922396}
   - component: {fileID: 6303070999753062128}
   - component: {fileID: 2434835811915288284}
-  - component: {fileID: 6374664865688181091}
+  - component: {fileID: 4227949084390005864}
   m_Layer: 5
   m_Name: PopUp
   m_TagString: Untagged
@@ -306,7 +306,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -1400, y: -1100}
+  m_SizeDelta: {x: -100, y: -1100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4564405612918922396
 CanvasRenderer:
@@ -372,7 +372,7 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &6374664865688181091
+--- !u!114 &4227949084390005864
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

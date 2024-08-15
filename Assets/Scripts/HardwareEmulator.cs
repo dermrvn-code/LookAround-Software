@@ -6,68 +6,85 @@ public class HardwareEmulator : MonoBehaviour
     public Settings settings;
     public InteractionHandler interaction;
 
-
+    bool isSceneBuilder = false;
     void Start()
     {
         if (eyes == null) Debug.LogError("No eyes were given in the Hardware Emulator");
-        if (settings == null) Debug.LogError("No settings were given in the Hardware Emulator");
-        if (interaction == null) Debug.LogError("No interaction were given in the Hardware Emulator");
+        if (settings == null)
+        {
+            if (!SceneManager.isSceneBuilder())
+            {
+                Debug.LogError("No settings were given in the Hardware Emulator");
+                return;
+            }
+            else
+            {
+                Debug.LogWarning("No settings were given in the Hardware Emulator, but it's a Scene Builder");
+            }
+            isSceneBuilder = true;
+        }
     }
 
     void Update()
     {
+        bool settingsVisible = false;
+        if (!isSceneBuilder)
+        {
+            settingsVisible = settings.IsVisible;
+        }
+
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            if (!settings.IsVisible)
+            if (!settingsVisible)
             {
                 eyes.LeftMove();
             }
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
-            if (!settings.IsVisible)
+            if (!settingsVisible)
             {
                 eyes.RightMove();
             }
         }
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (settings.IsVisible)
+            if (settingsVisible)
             {
                 settings.ShiftElement(-1);
             }
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (settings.IsVisible)
+            if (settingsVisible)
             {
                 settings.ShiftElement(1);
             }
         }
         if (Input.GetKey(KeyCode.DownArrow))
         {
-            if (!settings.IsVisible)
+            if (!settingsVisible)
             {
                 eyes.ZoomIn();
             }
         }
         else if (Input.GetKey(KeyCode.UpArrow))
         {
-            if (!settings.IsVisible)
+            if (!settingsVisible)
             {
                 eyes.ZoomOut();
             }
         }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (settings.IsVisible)
+            if (settingsVisible)
             {
                 settings.MoveSelector(1);
             }
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (settings.IsVisible)
+            if (settingsVisible)
             {
                 settings.MoveSelector(-1);
             }
@@ -78,7 +95,7 @@ public class HardwareEmulator : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (settings.IsVisible)
+            if (settingsVisible)
             {
                 settings.SelectElement();
             }

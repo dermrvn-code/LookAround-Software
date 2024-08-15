@@ -20,6 +20,8 @@ public class SceneManager : MonoBehaviour
         settings = FindObjectOfType<Settings>();
 
         sc = FindObjectOfType<SceneChanger>();
+
+        if (isSceneBuilder()) return;
         sc.ToMainScene();
 
 
@@ -35,6 +37,11 @@ public class SceneManager : MonoBehaviour
             sc.LoadWorld(false);
         }
         Debug.Log("World overview loaded!");
+    }
+
+    public static bool isSceneBuilder()
+    {
+        return UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "SceneBuilder";
     }
 
 

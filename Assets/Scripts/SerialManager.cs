@@ -5,19 +5,26 @@ using System.Linq;
 using System.IO.Ports;
 using TMPro;
 using System.Text;
+using System.Threading;
+using System.Collections.Concurrent;
+using System.Collections;
 
 public class SerialManager : MonoBehaviour
 {
     public EyesHandler eyes;
     public InteractionHandler interaction;
 
-
     public TMP_Dropdown PortsDropdown;
-
     public TMP_Text ConnectionText;
 
     private List<string> ports;
     private SerialPort serial;
+    private Thread serialThread;
+    private ConcurrentQueue<string> serialQueue = new ConcurrentQueue<string>();
+    private bool keepReading = false;
+
+    private string dump = "";
+
     void Start()
     {
         RefreshPortsDropdown();
@@ -25,50 +32,17 @@ public class SerialManager : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Make sure we have a serial port and that the connection is open
-        if (serial != null && serial.IsOpen)
+        // Process data from the queue in the main thread
+        while (serialQueue.TryDequeue(out string tempDump))
         {
-            ReadSerial();
-        }
-        else
-        {
-            ConnectionText.text = "Not connected";
-        }
-    }
+            DebugConsole.Log($"Received data: {tempDump}");
 
-    string dump = "";
-    void ReadSerial()
-    {
-        serial.DiscardInBuffer();
-        int tries = 0;
-        const int triesLimit = 1000;
-        bool done = false;
-        bool triedReading = false;
-        while (!done && tries < triesLimit)
-        {
-            if (serial.BytesToRead > 0)
+            if (!string.IsNullOrEmpty(tempDump))
             {
-                done = serial.ReadChar() == '$';
-                triedReading = true;
-            }
-            ++tries;
-        }
-        if (tries >= triesLimit)
-        {
-            Debug.LogError("Sensor error. Tried reading: " + triedReading.ToString());
-            return;
-        }
-        string tempDump = serial.ReadLine();
-        if (tempDump != "")
-        {
-            if (tempDump.Contains("#"))
-            {
-                tempDump = tempDump.Split("#")[0];
+                tempDump = tempDump.Split('#')[0];
+                tempDump = tempDump.Replace("$", "");
 
-                if (tempDump == dump) return;
-                dump = tempDump;
-
-                string[] splittedDump = dump.Split(';');
+                string[] splittedDump = tempDump.Split(';');
 
                 if (splittedDump.Length == 5)
                 {
@@ -76,39 +50,96 @@ public class SerialManager : MonoBehaviour
                 }
             }
         }
+
+        if (serial == null || !serial.IsOpen)
+        {
+            ConnectionText.text = "Not connected";
+        }
+    }
+
+    private void ReadSerial()
+    {
+        while (keepReading)
+        {
+            try
+            {
+                // Read data if available
+                if (serial.BytesToRead > 0)
+                {
+                    string line = serial.ReadLine().Trim();
+                    if (!string.IsNullOrEmpty(line) && line.StartsWith("$"))
+                    {
+                        DebugConsole.Log($"Enqueuing data: {line}");
+                        serialQueue.Enqueue(line);
+                    }
+                }
+            }
+            catch (TimeoutException ex)
+            {
+                DebugConsole.Log($"Serial read timeout: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                DebugConsole.Log($"Error reading serial data: {ex.Message}");
+                keepReading = false;
+            }
+        }
     }
 
     public void ExecuteData(string[] data)
     {
-        int rotation = int.Parse(data[0]);
-        bool interact1Pressed = int.Parse(data[1]) == 1 ? true : false;
-        bool interact2Pressed = int.Parse(data[2]) == 1 ? true : false;
-        int zoom = int.Parse(data[3]);
+        try
+        {
+            int.TryParse(data[0], out int rotation);
+            int.TryParse(data[1], out int zoom);
+            bool interact1Pressed = data[2] == "1";
+            bool interact2Pressed = data[3] == "1";
 
-        DebugConsole.LogValues(rotation, interact1Pressed, interact2Pressed, zoom);
+            DebugConsole.LogValues(rotation, interact1Pressed, interact2Pressed, zoom);
+
+            rotation = 360 - rotation; // Invert the rotation
+
+            // Smoothly update the eyes' rotation and zoom
+            // LerpEyes(360 - rotation, zoom);
+
+            eyes.rotation = rotation;
+            eyes.zoom = zoom;
+
+            if (interact1Pressed)
+            {
+                interaction.Interact();
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugConsole.Log($"Error parsing and executing data: {ex.Message}");
+        }
+    }
+
+    public IEnumerator LerpEyes(int rotation, int zoom)
+    {
+        float duration = 0.1f; // Duration of the lerp in seconds
+        float elapsedTime = 0f;
+        float startRotation = eyes.rotation;
+        float startZoom = eyes.zoom;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / duration;
+            eyes.rotation = Mathf.Lerp(startRotation, rotation, t);
+            eyes.zoom = (int)Mathf.Lerp(startZoom, zoom, t);
+            yield return null; // Wait until the next frame
+        }
 
         eyes.rotation = rotation;
         eyes.zoom = zoom;
-
-
-        if (interact1Pressed)
-        {
-            interaction.Interact();
-        }
-
     }
-
 
     public void RefreshPortsDropdown()
     {
-        // Remove all the previous options
         PortsDropdown.ClearOptions();
-
-        // Get port names
-        string[] portNames = SerialPort.GetPortNames();
-        ports = portNames.ToList();
-
-        // Add the port names to our options
+        ports = SerialPort.GetPortNames().ToList();
         PortsDropdown.AddOptions(ports);
     }
 
@@ -120,12 +151,10 @@ public class SerialManager : MonoBehaviour
             return;
         }
 
-        // Get the port we want to connect to from the dropdown
         string port = ports[PortsDropdown.value];
 
         try
         {
-            // Attempt to create our serial port using 9600 as our baud rate which matches the baud rate we set in the Arduino Sketch we created earlier.
             serial = new SerialPort(port, 115200)
             {
                 Encoding = Encoding.UTF8,
@@ -136,46 +165,41 @@ public class SerialManager : MonoBehaviour
                 NewLine = "\r\n"
             };
 
-            // serial.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
-
-            // Open up our serial connection
             serial.Open();
-
             ConnectionText.text = "Connected to " + port;
+
+            keepReading = true;
+            serialThread = new Thread(ReadSerial);
+            serialThread.Start();
         }
         catch (Exception e)
         {
-            Debug.LogError(e.Message);
-            ConnectionText.text = "Nicht verbunden";
+            DebugConsole.Log(e.Message);
+            ConnectionText.text = "Not connected";
         }
-    }
-
-    private void port_DataReceived(object sender,
-                                 SerialDataReceivedEventArgs e)
-    {
-        // Show all the incoming data in the port's buffer in the output window
-        Debug.Log("data : " + serial.ReadExisting());
     }
 
     public void Disconnect()
     {
+        keepReading = false;
+        if (serialThread != null && serialThread.IsAlive)
+        {
+            serialThread.Join();
+        }
+
         if (serial != null)
         {
-            // Close the connection if it is open
             if (serial.IsOpen)
             {
                 serial.Close();
             }
 
-            // Release any resources being used
             serial.Dispose();
             serial = null;
-
             ConnectionText.text = "Not connected";
         }
     }
 
-    // Make sure to close our connection if the script is destroyed
     void OnDestroy()
     {
         Disconnect();

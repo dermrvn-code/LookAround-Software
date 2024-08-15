@@ -99,7 +99,8 @@ public class SceneChanger : MonoBehaviour
     public void SwitchScene(Scene scene)
     {
         LoadSceneElements(scene.SceneElements);
-        ih.updateElementsNextFrame = true;
+        if (ih != null) ih.updateElementsNextFrame = true;
+
         if (scene.Type == Scene.MediaType.Video)
         {
             SwitchToVideo();
@@ -114,7 +115,7 @@ public class SceneChanger : MonoBehaviour
             photoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
             SwitchToFoto();
         }
-        settings.CloseView();
+        if (settings != null) settings.CloseView(); ;
     }
 
     public void LoadSceneElements(List<SceneElement> sceneElements)
@@ -122,7 +123,14 @@ public class SceneChanger : MonoBehaviour
 
         var children = new List<GameObject>();
         foreach (Transform child in sceneElementsContainer.transform) children.Add(child.gameObject);
-        children.ForEach(child => Destroy(child));
+        if (Application.isPlaying)
+        {
+            children.ForEach(child => Destroy(child));
+        }
+        else
+        {
+            children.ForEach(child => DestroyImmediate(child));
+        }
 
 
         foreach (var sceneElement in sceneElements)
@@ -152,6 +160,7 @@ public class SceneChanger : MonoBehaviour
         DomePosition dp = text.GetComponent<DomePosition>();
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
+        dp.distance = sceneElement.distance;
         Interactable interactable = text.GetComponent<Interactable>();
         interactable.OnInteract.AddListener(() =>
         {
@@ -172,6 +181,7 @@ public class SceneChanger : MonoBehaviour
         DomePosition dp = text.GetComponent<DomePosition>();
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
+        dp.distance = sceneElement.distance;
 
         Sprite sprite;
         switch (sceneElement.icon)
@@ -214,6 +224,7 @@ public class SceneChanger : MonoBehaviour
         DomePosition dp = arrow.GetComponent<DomePosition>();
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
+        dp.distance = sceneElement.distance;
 
         Interactable interactable = arrow.GetComponent<Interactable>();
         interactable.OnInteract.AddListener(() =>
@@ -222,6 +233,7 @@ public class SceneChanger : MonoBehaviour
         });
     }
 
+    public static string[] actionTypes = { "toScene" };
     public void ActionParser(string action)
     {
         string pattern = @"toScene\((.*?)\)";

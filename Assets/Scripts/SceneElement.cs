@@ -11,7 +11,7 @@ public class SceneElement
     public string icon;
     public int rotation;
 
-    public SceneElement(ElementType type, string text, int x, int y, int distance, int xRotationOffset, string action = null, string icon = null, int rotation = 0)
+    public SceneElement(ElementType type = ElementType.DirectionArrow, string text = "", int x = 0, int y = 0, int distance = 0, int xRotationOffset = 0, string action = null, string icon = null, int rotation = 0)
     {
         this.type = type;
         this.text = text;
@@ -29,7 +29,8 @@ public class SceneElement
         if (type == ElementType.Textbox)
         {
             return type.ToString() + " with value " + text + " at x:" + x + " y:" + y + ", a distance of " + distance + ", and icon '" + icon + "'";
-        }else if (type == ElementType.DirectionArrow)
+        }
+        else if (type == ElementType.DirectionArrow)
         {
             return type.ToString() + " with value " + text + " at x:" + x + " y:" + y + ", a distance of " + distance + ", and rotation of '" + rotation + "'";
         }

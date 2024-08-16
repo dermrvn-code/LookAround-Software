@@ -9,7 +9,6 @@ public class SceneEditorWindow : EditorWindow
 {
     public static string exportFolder = "SceneBuilder/Exports/";
     public static string worldName = "WorldName";
-    public static string overviewFilePath = exportFolder + worldName.Replace(" ", "").ToLower() + ".xml";
     private List<SceneData> scenes = new List<SceneData>();
     private Dictionary<string, Sprite> availableIcons = new Dictionary<string, Sprite>();
 
@@ -35,7 +34,7 @@ public class SceneEditorWindow : EditorWindow
         }
     }
 
-
+    Vector2 scrollPos;
     private void OnGUI()
     {
         GUILayout.Label("Scene Overview", EditorStyles.boldLabel);
@@ -43,13 +42,15 @@ public class SceneEditorWindow : EditorWindow
         worldName = EditorGUILayout.TextField("World Name", worldName).Replace(" ", "");
         GUILayout.Space(10);
 
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(400), GUILayout.Height(400));
+
         foreach (var scene in scenes)
         {
             GUILayout.BeginVertical("box");
             GUILayout.Label("Scene Configuration", EditorStyles.boldLabel);
 
-            scene.name = EditorGUILayout.TextField("Scene Name", scene.name).Replace(" ", "");
-            scene.folder = scene.name.Replace(" ", "").ToLower();
+            scene.name = EditorGUILayout.TextField("Scene Name", scene.name).Replace(" ", "").ToLower();
+            scene.folder = scene.name;
             scene.path = scene.folder + "/scene.xml";
             EditorGUILayout.LabelField("XML Path: " + scene.path);
 
@@ -86,8 +87,8 @@ public class SceneEditorWindow : EditorWindow
 
             GUILayout.Space(10);
 
-            scene.xOffset = Mathf.Clamp(EditorGUILayout.FloatField("X Offset", scene.xOffset), 0f, 1f);
-            scene.yOffset = Mathf.Clamp(EditorGUILayout.FloatField("Y Offset", scene.yOffset), 0f, 1f);
+            scene.xOffset = Mathf.Clamp(EditorGUILayout.FloatField("X Offset", scene.xOffset), -1f, 1f);
+            scene.yOffset = Mathf.Clamp(EditorGUILayout.FloatField("Y Offset", scene.yOffset), -1f, 1f);
 
             bool isStartScene = EditorGUILayout.Toggle("Start Scene", scene.startScene);
             if (isStartScene && !scene.startScene)
@@ -122,6 +123,8 @@ public class SceneEditorWindow : EditorWindow
 
             GUILayout.Space(30); // Space between scenes
         }
+
+        GUILayout.EndScrollView();
 
         if (GUILayout.Button("Add New Scene"))
         {
@@ -168,13 +171,14 @@ public class SceneEditorWindow : EditorWindow
 
         doc.AppendChild(root);
 
-        string directoryPath = Path.GetDirectoryName(overviewFilePath);
+        string overviewFile = exportFolder + worldName.Replace(" ", "").ToLower() + ".xml";
+        string directoryPath = Path.GetDirectoryName(overviewFile);
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
         }
 
-        doc.Save(overviewFilePath);
+        doc.Save(overviewFile);
 
         AssetDatabase.Refresh();
         EditorUtility.DisplayDialog("Scene Overview Saved", "Scene overview saved successfully!", "OK");
@@ -213,16 +217,19 @@ public class SceneEditorWindow : EditorWindow
                 switch (element.type)
                 {
                     case SceneElement.ElementType.DirectionArrow:
+                        elementNode.SetAttribute("distance", element.distance.ToString());
                         elementNode.SetAttribute("rotation", element.rotation.ToString());
                         elementNode.SetAttribute("action", element.action);
                         break;
 
                     case SceneElement.ElementType.Textbox:
+                        elementNode.SetAttribute("distance", element.distance.ToString());
                         elementNode.SetAttribute("icon", element.icon);
                         elementNode.InnerText = element.text;
                         break;
 
                     case SceneElement.ElementType.Text:
+                        elementNode.SetAttribute("distance", element.distance.ToString());
                         elementNode.SetAttribute("action", element.action);
                         elementNode.InnerText = element.text;
                         break;
@@ -233,6 +240,7 @@ public class SceneEditorWindow : EditorWindow
 
             doc.AppendChild(root);
 
+            string overviewFilePath = exportFolder + worldName.Replace(" ", "").ToLower() + ".xml";
             string directoryPath = Path.GetDirectoryName(overviewFilePath);
             string sceneFile = Path.Combine(directoryPath, path);
             string sceneFileFolder = Path.GetDirectoryName(sceneFile);
@@ -250,6 +258,7 @@ public class SceneEditorWindow : EditorWindow
 
         void CopyImage(SceneData scene)
         {
+            string overviewFilePath = exportFolder + worldName.Replace(" ", "").ToLower() + ".xml";
             string directoryPath = Path.GetDirectoryName(overviewFilePath);
             string destinationPath = Path.Combine(directoryPath, scene.source);
 
@@ -315,11 +324,13 @@ public class SceneElementEditorWindow : EditorWindow
         }
     }
 
+    Vector2 scrollPos;
     private void OnGUI()
     {
         if (scene == null || availableIcons == null || allScenes == null) return;
 
         GUILayout.Label("Scene: " + scene.name, EditorStyles.boldLabel);
+
 
         if (GUILayout.Button("Add New Element"))
         {
@@ -333,6 +344,7 @@ public class SceneElementEditorWindow : EditorWindow
 
         EditorGUI.BeginChangeCheck(); // Begin tracking changes
 
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(400), GUILayout.Height(400));
         foreach (var element in scene.elements)
         {
             GUILayout.BeginVertical("box");
@@ -346,7 +358,7 @@ public class SceneElementEditorWindow : EditorWindow
             switch (element.type)
             {
                 case SceneElement.ElementType.DirectionArrow:
-                    element.rotation = Mathf.Clamp(EditorGUILayout.IntField("Rotation", element.rotation), 0, 360);
+                    element.rotation = EditorGUILayout.IntField("Rotation", element.rotation) % 360;
                     ActionHandler(element);
                     break;
 
@@ -387,6 +399,7 @@ public class SceneElementEditorWindow : EditorWindow
 
             GUILayout.Space(20); // Space between elements
         }
+        EditorGUILayout.EndScrollView();
 
         if (EditorGUI.EndChangeCheck()) // Check if any changes occurred
         {

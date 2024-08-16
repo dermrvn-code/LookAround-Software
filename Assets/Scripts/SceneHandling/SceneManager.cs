@@ -123,20 +123,22 @@ public class SceneManager : MonoBehaviour
 
         var sceneElements = new List<SceneElement>();
 
+        Debug.Log("Found " + elements.Count() + " elements");
+
         foreach (var element in elements)
         {
-            string elementType = element.Attribute("type").Value;
+            string elementType = element.Attribute("type").Value.ToLower();
 
             string text = element.Value.Trim();
             if (text == "")
             {
                 text = "No Text given";
-            }
+            } 
 
             int x = int.Parse(element.Attribute("x").Value);
             int y = int.Parse(element.Attribute("y").Value);
 
-            int distance = 0;
+            int distance = 10;
             if (element.Attribute("distance") != null)
             {
                 distance = int.Parse(element.Attribute("distance").Value);
@@ -170,7 +172,7 @@ public class SceneManager : MonoBehaviour
                         icon: icon
                     );
             }
-            else if (elementType == "directionArrow")
+            else if (elementType == "directionarrow")
             {
                 string action = element.Attribute("action").Value;
                 int rotation = int.Parse(element.Attribute("rotation").Value);
@@ -185,14 +187,15 @@ public class SceneManager : MonoBehaviour
             }
             else
             {
+                Debug.Log("Element doesnt match any type : " + elementType);
                 se = null;
             }
             if (se != null)
             {
                 sceneElements.Add(se);
+                Debug.Log("Element of type " + elementType + " added to List with new size of " + sceneElements.Count());
             }
         }
-
         Scene sceneObj = new Scene(type == "video" ? Scene.MediaType.Video : Scene.MediaType.Photo, sceneName, source, sceneElements, isStartScene, xOffset, yOffset);
 
         sceneList.Add(sceneName, sceneObj);

@@ -101,6 +101,7 @@ public class SceneChanger : MonoBehaviour
         LoadSceneElements(scene.SceneElements);
         if (ih != null) ih.updateElementsNextFrame = true;
 
+
         if (scene.Type == Scene.MediaType.Video)
         {
             SwitchToVideo();
@@ -120,7 +121,7 @@ public class SceneChanger : MonoBehaviour
 
     public void LoadSceneElements(List<SceneElement> sceneElements)
     {
-
+        Debug.Log("Loading " + sceneElements.Count + " elements");
         var children = new List<GameObject>();
         foreach (Transform child in sceneElementsContainer.transform) children.Add(child.gameObject);
         if (Application.isPlaying)

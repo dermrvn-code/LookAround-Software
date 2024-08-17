@@ -25,7 +25,7 @@ public class DomePosition : MonoBehaviour
             position.x = 360+position.x;
         }
         if(position.y < 0){
-            position.y = 360+position.x;
+            position.y = 360+position.y;
         }
         Vector3 cartesianPosition = PolarToCartesian(position);
         SetRectPosition(cartesianPosition);

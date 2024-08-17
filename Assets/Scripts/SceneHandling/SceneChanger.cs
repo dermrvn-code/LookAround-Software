@@ -25,6 +25,8 @@ public class SceneChanger : MonoBehaviour
     InteractionHandler ih;
     Settings settings;
 
+    Scene currentScene;
+
     void Start()
     {
         sm = FindObjectOfType<SceneManager>();
@@ -40,6 +42,8 @@ public class SceneChanger : MonoBehaviour
     public void ToMainScene()
     {
         photoMaterial.mainTexture = mainScreenImage;
+        photoMaterial.mainTextureOffset = new Vector2(0, 0);
+
         SwitchToFoto();
     }
 
@@ -90,33 +94,38 @@ public class SceneChanger : MonoBehaviour
 
     public void SwitchSceneAnimation(Scene scene)
     {
-        TransitionParticles(() =>
-        {
-            SwitchScene(scene);
-        });
+        if(scene == null || scene != currentScene){
+            TransitionParticles(() =>
+            {
+                SwitchScene(scene);
+            });
+        }
     }
 
     public void SwitchScene(Scene scene)
     {
-        LoadSceneElements(scene.SceneElements);
-        if (ih != null) ih.updateElementsNextFrame = true;
+        if(scene == null || scene != currentScene){
+            currentScene = scene;
+            LoadSceneElements(scene.SceneElements);
+            if (ih != null) ih.updateElementsNextFrame = true;
 
 
-        if (scene.Type == Scene.MediaType.Video)
-        {
-            SwitchToVideo();
-            videoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
-            vp.url = scene.Source;
+            if (scene.Type == Scene.MediaType.Video)
+            {
+                SwitchToVideo();
+                videoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
+                vp.url = scene.Source;
+            }
+            else
+            {
+                Texture2D tex = new Texture2D(2, 2);
+                tex.LoadImage(File.ReadAllBytes(scene.Source));
+                photoMaterial.mainTexture = tex;
+                photoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
+                SwitchToFoto();
+            }
+            if (settings != null) settings.CloseView(); ;
         }
-        else
-        {
-            Texture2D tex = new Texture2D(2, 2);
-            tex.LoadImage(File.ReadAllBytes(scene.Source));
-            photoMaterial.mainTexture = tex;
-            photoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
-            SwitchToFoto();
-        }
-        if (settings != null) settings.CloseView(); ;
     }
 
     public void LoadSceneElements(List<SceneElement> sceneElements)

@@ -5,10 +5,12 @@ public class HardwareEmulator : MonoBehaviour
     public EyesHandler eyes;
     public Settings settings;
     public InteractionHandler interaction;
+    public SceneChanger sc;
 
     bool isSceneBuilder = false;
     void Start()
     {
+        sc = FindObjectOfType<SceneChanger>();
         if (eyes == null) Debug.LogError("No eyes were given in the Hardware Emulator");
         if (settings == null)
         {
@@ -102,6 +104,13 @@ public class HardwareEmulator : MonoBehaviour
             else
             {
                 interaction.Interact();
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            if (!settingsVisible)
+            {
+                sc.ToStartScene();
             }
         }
         if (Input.GetKeyDown(KeyCode.C))

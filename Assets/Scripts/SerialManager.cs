@@ -13,6 +13,7 @@ public class SerialManager : MonoBehaviour
 {
     public EyesHandler eyes;
     public InteractionHandler interaction;
+    public SceneChanger sc;
 
     public TMP_Dropdown PortsDropdown;
     public TMP_Text ConnectionText;
@@ -27,6 +28,7 @@ public class SerialManager : MonoBehaviour
 
     void Start()
     {
+        sc = FindObjectOfType<SceneChanger>();
         RefreshPortsDropdown();
     }
 
@@ -108,6 +110,11 @@ public class SerialManager : MonoBehaviour
             if (interact1Pressed)
             {
                 interaction.Interact();
+            }
+
+            if (interact2Pressed)
+            {
+                sc.ToStartScene();
             }
         }
         catch (Exception ex)

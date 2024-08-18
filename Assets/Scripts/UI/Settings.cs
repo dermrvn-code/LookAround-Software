@@ -26,6 +26,9 @@ public class Settings : MonoBehaviour
     Toggle loadWorldOnBootToggle;
 
     [SerializeField]
+    Toggle standardConnectToggle;
+
+    [SerializeField]
     TMP_Dropdown currentWorldDropdown;
 
     [SerializeField]
@@ -53,6 +56,7 @@ public class Settings : MonoBehaviour
         LoadValues();
         worldFolderPathText.text = worldsOverviewFile;
         loadWorldOnBootToggle.isOn = loadWorldOnBoot;
+        standardConnectToggle.isOn = SerialManager.standardConnect;
     }
 
     void Start()
@@ -241,6 +245,7 @@ public class Settings : MonoBehaviour
         worldsOverviewFile = PlayerPrefs.GetString("sceneOverviewFile", "");
         loadWorldOnBoot = PlayerPrefs.GetInt("loadStartSceenOnBoot", 0) == 1 ? true : false;
         SceneManager.currentWorld = PlayerPrefs.GetString("currentWorld", "");
+        SerialManager.standardConnect = PlayerPrefs.GetInt("standardConnect", 0) == 1 ? true : false;
     }
 
     private void SaveValues()
@@ -248,6 +253,7 @@ public class Settings : MonoBehaviour
         PlayerPrefs.SetString("sceneOverviewFile", worldsOverviewFile);
         PlayerPrefs.SetInt("loadStartSceenOnBoot", loadWorldOnBoot ? 1 : 0);
         PlayerPrefs.SetString("currentWorld", SceneManager.currentWorld);
+        PlayerPrefs.SetInt("standardConnect", SerialManager.standardConnect ? 1 : 0);
         PlayerPrefs.Save();
     }
 

@@ -24,12 +24,36 @@ public class SerialManager : MonoBehaviour
     private ConcurrentQueue<string> serialQueue = new ConcurrentQueue<string>();
     private bool keepReading = false;
 
-    private string dump = "";
+    public static bool standardConnect = false;
+    public string standardPort = "COM5";
+    public TMP_Text connectToStandardPortText;
 
     void Start()
     {
         sc = FindObjectOfType<SceneChanger>();
         RefreshPortsDropdown();
+
+        if (connectToStandardPortText != null)
+        {
+            connectToStandardPortText.text = connectToStandardPortText.text + " " + standardPort;
+        }
+
+        if (standardConnect)
+        {
+            if (ConnectToPort(standardPort))
+            {
+                Debug.Log("Connected to standard port");
+            }
+            else
+            {
+                Debug.LogWarning("Failed to connect to standard port");
+            }
+        }
+    }
+
+    public void SwitchStandardConnectBool(bool value)
+    {
+        standardConnect = value;
     }
 
     void FixedUpdate()
@@ -149,16 +173,18 @@ public class SerialManager : MonoBehaviour
         ports = SerialPort.GetPortNames().ToList();
         PortsDropdown.AddOptions(ports);
     }
-
-    public void ConnectToPort()
+    public bool ConnectToPort(string port = "")
     {
         if (ports.Count == 0)
         {
             ConnectionText.text = "Not Connected";
-            return;
+            return false;
         }
 
-        string port = ports[PortsDropdown.value];
+        if (port == "")
+        {
+            port = ports[PortsDropdown.value];
+        }
 
         try
         {
@@ -178,11 +204,13 @@ public class SerialManager : MonoBehaviour
             keepReading = true;
             serialThread = new Thread(ReadSerial);
             serialThread.Start();
+            return true;
         }
         catch (Exception e)
         {
             DebugConsole.Log(e.Message);
             ConnectionText.text = "Not connected";
+            return false;
         }
     }
 

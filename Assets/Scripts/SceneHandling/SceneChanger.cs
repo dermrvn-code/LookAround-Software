@@ -94,7 +94,8 @@ public class SceneChanger : MonoBehaviour
 
     public void SwitchSceneAnimation(Scene scene)
     {
-        if(scene == null || scene != currentScene){
+        if (scene == null || scene != currentScene)
+        {
             TransitionParticles(() =>
             {
                 SwitchScene(scene);
@@ -104,33 +105,40 @@ public class SceneChanger : MonoBehaviour
 
     public void SwitchScene(Scene scene)
     {
-        if(scene == null || scene != currentScene){
+        if (scene == null || scene != currentScene)
+        {
             currentScene = scene;
             LoadSceneElements(scene.SceneElements);
             if (ih != null) ih.updateElementsNextFrame = true;
 
 
-            if (scene.Type == Scene.MediaType.Video)
+            try
             {
-                SwitchToVideo();
-                videoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
-                vp.url = scene.Source;
+                if (scene.Type == Scene.MediaType.Video)
+                {
+                    SwitchToVideo();
+                    videoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
+                    vp.url = scene.Source;
+                }
+                else
+                {
+                    Texture2D tex = new Texture2D(2, 2);
+                    tex.LoadImage(File.ReadAllBytes(scene.Source));
+                    photoMaterial.mainTexture = tex;
+                    photoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
+                    SwitchToFoto();
+                }
+                if (settings != null) settings.CloseView(); ;
             }
-            else
+            catch (System.Exception e)
             {
-                Texture2D tex = new Texture2D(2, 2);
-                tex.LoadImage(File.ReadAllBytes(scene.Source));
-                photoMaterial.mainTexture = tex;
-                photoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
-                SwitchToFoto();
+                Debug.LogWarning("Error while switching scene: " + e.Message);
             }
-            if (settings != null) settings.CloseView(); ;
         }
     }
 
     public void LoadSceneElements(List<SceneElement> sceneElements)
     {
-        Debug.Log("Loading " + sceneElements.Count + " elements");
         var children = new List<GameObject>();
         foreach (Transform child in sceneElementsContainer.transform) children.Add(child.gameObject);
         if (Application.isPlaying)

@@ -25,11 +25,9 @@ public class SceneEditorWindow : EditorWindow
 
     private void LoadAvailableIcons()
     {
-        Debug.Log("Load icons");
         availableIcons.Clear();
         foreach (var icon in SpriteHolder.icons)
         {
-            Debug.Log("Loading " + icon.Key);
             availableIcons[icon.Key] = icon.Value;
         }
     }
@@ -253,7 +251,6 @@ public class SceneEditorWindow : EditorWindow
             CopyImage(this);
 
             string xmlString = doc.OuterXml;
-            Debug.Log(xmlString);
         }
 
         void CopyImage(SceneData scene)

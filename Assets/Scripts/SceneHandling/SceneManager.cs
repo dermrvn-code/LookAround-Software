@@ -76,7 +76,6 @@ public class SceneManager : MonoBehaviour
         if (!File.Exists(sceneOverviewPath)) Debug.LogWarning("The scene overview file does not exist: " + sceneOverviewPath);
         sceneOverview = XDocument.Load(sceneOverviewPath);
         var scenes = sceneOverview.Descendants("Scene");
-        Debug.Log("Loading Scenes from: " + sceneOverviewPath);
 
         // Loop through every Scene
         foreach (var scene in scenes)
@@ -122,8 +121,6 @@ public class SceneManager : MonoBehaviour
         var elements = sceneTag.Descendants("Element");
 
         var sceneElements = new List<SceneElement>();
-
-        Debug.Log("Found " + elements.Count() + " elements");
 
         foreach (var element in elements)
         {
@@ -193,7 +190,6 @@ public class SceneManager : MonoBehaviour
             if (se != null)
             {
                 sceneElements.Add(se);
-                Debug.Log("Element of type " + elementType + " added to List with new size of " + sceneElements.Count());
             }
         }
         Scene sceneObj = new Scene(type == "video" ? Scene.MediaType.Video : Scene.MediaType.Photo, sceneName, source, sceneElements, isStartScene, xOffset, yOffset);

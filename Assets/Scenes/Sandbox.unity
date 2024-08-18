@@ -6384,6 +6384,7 @@ MonoBehaviour:
   eyes: {fileID: 1269589985}
   settings: {fileID: 688745041}
   interaction: {fileID: 1269589987}
+  sc: {fileID: 0}
 --- !u!4 &563261371
 Transform:
   m_ObjectHideFlags: 0
@@ -6439,6 +6440,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eyes: {fileID: 1269589985}
   interaction: {fileID: 1269589987}
+  sc: {fileID: 0}
   PortsDropdown: {fileID: 1885000577}
   ConnectionText: {fileID: 149786462}
 --- !u!114 &563261374

@@ -1,3 +1,0 @@
-<Scene type="image" source="image.jpg" xOffset="0" yOffset="0">
-  <Element x="-65" y="30" type="DirectionArrow" rotation="90" action="toScene(Scene 01)" />
-</Scene>

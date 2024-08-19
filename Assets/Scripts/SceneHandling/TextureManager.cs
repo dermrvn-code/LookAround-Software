@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -9,9 +10,16 @@ public class TextureManager : MonoBehaviour
 {
     public static int maxTexturesToKeep = 15;
     public static int maxMemoryUsageMB = 2000;
-    private Dictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
-    private LinkedList<string> lruList = new LinkedList<string>();
-    private int currentMemoryUsage = 0;
+    Dictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
+    LinkedList<string> lruList = new LinkedList<string>();
+    int currentMemoryUsage = 0;
+
+    ProgressLoader progressLoader;
+
+    public void Start()
+    {
+        progressLoader = FindObjectOfType<ProgressLoader>();
+    }
 
 
     public IEnumerator LoadAllTextures(List<string> texturePaths, Action onComplete = null)
@@ -26,7 +34,16 @@ public class TextureManager : MonoBehaviour
                 Debug.LogWarning($"Max number of textures ({maxTexturesToKeep}) to keep loaded reached. Stopping preload.");
                 break;
             }
-            yield return StartCoroutine(LoadTextureWithEviction(texturePaths[i], null));
+            var texturePath = texturePaths[i];
+
+            float progressFull = texturePaths.Count;
+            if (maxTexturesToKeep < texturePaths.Count)
+            {
+                progressFull = maxTexturesToKeep;
+            }
+            progressLoader.UpdateBar((i + 1) / progressFull, Path.GetFileName(texturePath));
+
+            yield return StartCoroutine(LoadTextureWithEviction(texturePath, null));
         }
 
         onComplete?.Invoke();

@@ -14,6 +14,7 @@ public class SceneManager : MonoBehaviour
 
     XDocument worldOverview;
     XDocument sceneOverview;
+    ProgressLoader progressLoader;
 
     public Dictionary<string, Scene> sceneList = new Dictionary<string, Scene>();
 
@@ -22,6 +23,7 @@ public class SceneManager : MonoBehaviour
         settings = FindObjectOfType<Settings>();
         sc = FindObjectOfType<SceneChanger>();
         textureManager = FindObjectOfType<TextureManager>();
+        progressLoader = FindObjectOfType<ProgressLoader>();
 
         if (isSceneBuilder()) return;
         sc.ToMainScene();
@@ -83,11 +85,12 @@ public class SceneManager : MonoBehaviour
         sceneOverview = XDocument.Load(sceneOverviewPath);
         var scenes = sceneOverview.Descendants("Scene");
 
-        // Loop through every Scene
+        int counter = 0;
         foreach (var scene in scenes)
         {
             string scenePath = scene.Attribute("path").Value;
             string sceneName = scene.Attribute("name").Value;
+
             var startScene = scene.Attribute("startScene");
             bool isStartScene = false;
             if (startScene != null)
@@ -108,8 +111,9 @@ public class SceneManager : MonoBehaviour
             {
                 texturePaths.Add(s.Source);
             }
-
+            counter++;
         }
+        if (settings != null) settings.CloseView(); ;
 
         StartCoroutine(textureManager.LoadAllTextures(texturePaths, () =>
         {

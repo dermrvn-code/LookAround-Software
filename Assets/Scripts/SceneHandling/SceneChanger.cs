@@ -153,8 +153,6 @@ public class SceneChanger : MonoBehaviour
                 {
                     Debug.LogWarning("Scene type not supported");
                 }
-
-                if (settings != null) settings.CloseView(); ;
             }
             catch (System.Exception e)
             {

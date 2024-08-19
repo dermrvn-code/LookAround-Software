@@ -21,4 +21,4 @@ It covers the Unity project that is used inside the periscope to display any 360
 For an in-depth documentation of the software, please visit the [software documentation](https://dermrvn-code.github.io/LookAround/software/) page.
 ## 📜 License
 
-This software is licensed under the [MIT](https://github.com/dermrvn-code/LookAround-Unity/LICENSE).
+This software is licensed under the [MIT](/LICENSE).

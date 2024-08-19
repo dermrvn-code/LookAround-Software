@@ -71,7 +71,6 @@ public class SceneManager : MonoBehaviour
         return true;
     }
 
-    [SerializeField]
     List<string> texturePaths;
     string currentSceneOverviewPath;
     public void LoadSceneOverview(string path, Action onComplete)

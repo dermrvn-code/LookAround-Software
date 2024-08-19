@@ -18,8 +18,8 @@ public class EyesHandler : MonoBehaviour
     private int minZoom = 100;
     private int maxZoom = 25;
 
-    public float rotationSpeed = 10f;
-    public float zoomSpeed = 10f;
+    public float rotationSpeed = 2f;
+    public float zoomSpeed = 2f;
 
 
     void Awake()

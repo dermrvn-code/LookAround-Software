@@ -60,7 +60,7 @@ public class InteractionHandler : MonoBehaviour
     // Update is called once per frame
     float oldRotation = -20;
     bool checkedElements = false;
-    int offset = 5;
+    int offset = 6;
     bool foundTarget = false;
     void Update()
     {

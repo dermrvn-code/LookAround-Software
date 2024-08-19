@@ -32,6 +32,12 @@ public class Settings : MonoBehaviour
     TMP_Dropdown currentWorldDropdown;
 
     [SerializeField]
+    Slider maxTextureBufferSlider;
+
+    [SerializeField]
+    Slider maxMBBufferSlider;
+
+    [SerializeField]
     PopUp popupPrefab;
     public static string worldsOverviewFile = "";
     public static bool loadWorldOnBoot = false;
@@ -57,6 +63,8 @@ public class Settings : MonoBehaviour
         worldFolderPathText.text = worldsOverviewFile;
         loadWorldOnBootToggle.isOn = loadWorldOnBoot;
         standardConnectToggle.isOn = SerialManager.standardConnect;
+        maxTextureBufferSlider.value = TextureManager.maxTexturesToKeep;
+        maxMBBufferSlider.value = TextureManager.maxMemoryUsageMB;
     }
 
     void Start()
@@ -246,6 +254,8 @@ public class Settings : MonoBehaviour
         loadWorldOnBoot = PlayerPrefs.GetInt("loadStartSceenOnBoot", 0) == 1 ? true : false;
         SceneManager.currentWorld = PlayerPrefs.GetString("currentWorld", "");
         SerialManager.standardConnect = PlayerPrefs.GetInt("standardConnect", 0) == 1 ? true : false;
+        TextureManager.maxTexturesToKeep = PlayerPrefs.GetInt("maxTexturesToKeep", 16);
+        TextureManager.maxMemoryUsageMB = PlayerPrefs.GetInt("maxMemoryUsageMB", 2000);
     }
 
     private void SaveValues()
@@ -254,6 +264,8 @@ public class Settings : MonoBehaviour
         PlayerPrefs.SetInt("loadStartSceenOnBoot", loadWorldOnBoot ? 1 : 0);
         PlayerPrefs.SetString("currentWorld", SceneManager.currentWorld);
         PlayerPrefs.SetInt("standardConnect", SerialManager.standardConnect ? 1 : 0);
+        PlayerPrefs.SetInt("maxTexturesToKeep", TextureManager.maxTexturesToKeep);
+        PlayerPrefs.SetInt("maxMemoryUsageMB", TextureManager.maxMemoryUsageMB);
         PlayerPrefs.Save();
     }
 

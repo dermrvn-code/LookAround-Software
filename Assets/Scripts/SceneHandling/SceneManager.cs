@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ public class SceneManager : MonoBehaviour
 
     SceneChanger sc;
     Settings settings;
+    TextureManager textureManager;
 
     XDocument worldOverview;
     XDocument sceneOverview;
@@ -18,8 +20,8 @@ public class SceneManager : MonoBehaviour
     void Start()
     {
         settings = FindObjectOfType<Settings>();
-
         sc = FindObjectOfType<SceneChanger>();
+        textureManager = FindObjectOfType<TextureManager>();
 
         if (isSceneBuilder()) return;
         sc.ToMainScene();
@@ -34,7 +36,7 @@ public class SceneManager : MonoBehaviour
         }
         else if (Settings.loadWorldOnBoot)
         {
-            sc.LoadWorld(false);
+            sc.LoadWorld();
         }
         Debug.Log("World overview loaded!");
     }
@@ -67,9 +69,13 @@ public class SceneManager : MonoBehaviour
         return true;
     }
 
-
-    public void LoadSceneOverview(string path)
+    [SerializeField]
+    List<string> texturePaths;
+    public void LoadSceneOverview(string path, Action onComplete)
     {
+        texturePaths = new List<string>();
+        textureManager.ReleaseAllTextures();
+
         sceneList = new Dictionary<string, Scene>();
         string mainFolder = Path.GetDirectoryName(Settings.worldsOverviewFile);
         string sceneOverviewPath = Path.Combine(mainFolder, path);
@@ -90,11 +96,29 @@ public class SceneManager : MonoBehaviour
             }
 
             string sceneFolder = Path.GetDirectoryName(sceneOverviewPath);
-            LoadScene(sceneName, sceneFolder, scenePath, isStartScene);
+            Scene s = LoadScene(sceneName, sceneFolder, scenePath, isStartScene);
+
+            if (s.Type != Scene.MediaType.Photo) return;
+
+            if (s.IsStartScene)
+            {
+                texturePaths.Insert(0, s.Source);
+            }
+            else
+            {
+                texturePaths.Add(s.Source);
+            }
+
         }
+
+        StartCoroutine(textureManager.LoadAllTextures(texturePaths, () =>
+        {
+            Debug.Log("Textures preloaded!");
+            onComplete?.Invoke();
+        }));
     }
 
-    void LoadScene(string sceneName, string mainFolder, string scenePath, bool isStartScene)
+    Scene LoadScene(string sceneName, string mainFolder, string scenePath, bool isStartScene)
     {
         var sceneXML = XDocument.Load(mainFolder + "/" + scenePath);
 
@@ -130,7 +154,7 @@ public class SceneManager : MonoBehaviour
             if (text == "")
             {
                 text = "No Text given";
-            } 
+            }
 
             int x = int.Parse(element.Attribute("x").Value);
             int y = int.Parse(element.Attribute("y").Value);
@@ -195,5 +219,13 @@ public class SceneManager : MonoBehaviour
         Scene sceneObj = new Scene(type == "video" ? Scene.MediaType.Video : Scene.MediaType.Photo, sceneName, source, sceneElements, isStartScene, xOffset, yOffset);
 
         sceneList.Add(sceneName, sceneObj);
+        return sceneObj;
+    }
+
+
+    void OnDestroy()
+    {
+        // Release all textures when done
+        textureManager.ReleaseAllTextures();
     }
 }

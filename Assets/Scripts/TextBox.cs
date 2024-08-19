@@ -72,15 +72,19 @@ public class TextBox : Hoverable
         StartCoroutine(Fade(icon, textColor, Color.clear));
         StartCoroutine(Scale(background.transform, closedScale, backgroundScale));
         yield return new WaitForSeconds(100 * 0.005f);
-        StartCoroutine(Fade(tmptext, Color.clear, textColor));
+        if(stayOpen){
+            StartCoroutine(Fade(tmptext, Color.clear, textColor));
+        }
     }
 
     IEnumerator Close()
     {
         StartCoroutine(Fade(tmptext, textColor, Color.clear));
         yield return new WaitForSeconds(100 * 0.005f);
-        StartCoroutine(Scale(background.transform, backgroundScale, closedScale));
-        StartCoroutine(Fade(icon, Color.clear, textColor));
+        if(stayClosed){
+            StartCoroutine(Scale(background.transform, backgroundScale, closedScale));
+            StartCoroutine(Fade(icon, Color.clear, textColor));
+        }
     }
 
     IEnumerator Scale(Transform element, Vector3 from, Vector3 to)

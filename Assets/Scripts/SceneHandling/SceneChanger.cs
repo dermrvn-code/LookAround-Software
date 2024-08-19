@@ -1,15 +1,16 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Video;
 
 public class SceneChanger : MonoBehaviour
 {
-    public GameObject particles;
+    public GameObject particlesGameobject;
+    ParticleSystem particles;
 
     public MeshRenderer domeRenderer;
 
@@ -24,6 +25,7 @@ public class SceneChanger : MonoBehaviour
     SceneManager sm;
     InteractionHandler ih;
     Settings settings;
+    TextureManager textureManager;
 
     Scene currentScene;
 
@@ -32,6 +34,11 @@ public class SceneChanger : MonoBehaviour
         sm = FindObjectOfType<SceneManager>();
         ih = FindObjectOfType<InteractionHandler>();
         settings = FindObjectOfType<Settings>();
+        textureManager = FindObjectOfType<TextureManager>();
+
+        // To prevent particles in the editor window
+        particlesGameobject.SetActive(true);
+        particles = particlesGameobject.GetComponent<ParticleSystem>();
     }
 
     public void Quit()
@@ -47,18 +54,19 @@ public class SceneChanger : MonoBehaviour
         SwitchToFoto();
     }
 
-    public void LoadWorld(bool animate = true)
+    public void LoadWorld()
     {
-        string path = "";
-        SceneManager.worldsList.TryGetValue(SceneManager.currentWorld, out path);
+        SceneManager.worldsList.TryGetValue(SceneManager.currentWorld, out string path);
         if (path == "")
         {
             Debug.LogWarning("The current world is not in the worlds list");
             return;
         }
-        sm.LoadSceneOverview(path);
-        Debug.Log("Loading World: " + path);
-        ToStartScene(animate);
+        sm.LoadSceneOverview(path, () =>
+        {
+            Debug.Log("Loading World: " + path);
+            ToStartScene();
+        });
     }
 
     public void ToStartScene(bool animate = true)
@@ -96,14 +104,17 @@ public class SceneChanger : MonoBehaviour
     {
         if (scene == null || scene != currentScene)
         {
-            TransitionParticles(() =>
+            TransitionParticles((sceneLoaded) =>
             {
-                SwitchScene(scene);
+                SwitchScene(scene, () =>
+                {
+                    sceneLoaded?.Invoke();
+                });
             });
         }
     }
 
-    public void SwitchScene(Scene scene)
+    public void SwitchScene(Scene scene, Action onLoaded = null)
     {
         if (scene == null || scene != currentScene)
         {
@@ -114,28 +125,46 @@ public class SceneChanger : MonoBehaviour
 
             try
             {
+                if (!File.Exists(scene.Source))
+                {
+                    Debug.LogWarning("Scene media " + scene.Source + " does not exist");
+                    return;
+                }
+
+
                 if (scene.Type == Scene.MediaType.Video)
                 {
                     SwitchToVideo();
                     videoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
                     vp.url = scene.Source;
+                    onLoaded?.Invoke();
+                }
+                else if (scene.Type == Scene.MediaType.Photo)
+                {
+                    StartCoroutine(textureManager.GetTexture(scene.Source, texture =>
+                    {
+                        photoMaterial.mainTexture = texture;
+                        photoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
+                        SwitchToFoto();
+                        onLoaded?.Invoke();
+                    }));
                 }
                 else
                 {
-                    Texture2D tex = new Texture2D(2, 2);
-                    tex.LoadImage(File.ReadAllBytes(scene.Source));
-                    photoMaterial.mainTexture = tex;
-                    photoMaterial.mainTextureOffset = new Vector2(scene.XOffset, scene.YOffset);
-                    SwitchToFoto();
+                    Debug.LogWarning("Scene type not supported");
                 }
+
                 if (settings != null) settings.CloseView(); ;
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning("Error while switching scene: " + e.Message);
+                Debug.LogError("Error while switching to scene " + scene.Name);
+                Debug.LogError(e.Message);
             }
         }
     }
+
+
 
     public void LoadSceneElements(List<SceneElement> sceneElements)
     {
@@ -269,20 +298,25 @@ public class SceneChanger : MonoBehaviour
         }
     }
 
-    public void TransitionParticles(UnityAction action)
+    public void TransitionParticles(Action<Action> sceneLoaded)
     {
-        StartCoroutine(_StartParticles(action));
+        StartCoroutine(_StartParticles(sceneLoaded));
     }
 
-    private IEnumerator _StartParticles(UnityAction action)
+    private IEnumerator _StartParticles(Action<Action> sceneLoaded)
     {
-        if (!particles.activeSelf)
+        particles.Play();
+        yield return new WaitForSeconds(2f);
+        sceneLoaded.Invoke(() =>
         {
-            particles.SetActive(true);
-            yield return new WaitForSeconds(1.5f);
-            action.Invoke();
-            yield return new WaitForSeconds(2f);
-            particles.SetActive(false);
-        }
+            StartCoroutine(_StopParticles());
+        });
+
+    }
+
+    private IEnumerator _StopParticles()
+    {
+        yield return new WaitForSeconds(0.5f);
+        particles.Stop();
     }
 }

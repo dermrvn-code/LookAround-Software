@@ -8,22 +8,24 @@ public class EyesHandler : MonoBehaviour
     public Camera leftEye;
     public Camera rightEye;
 
-    public float eyeSpacing = 0.6f;
+    public float eyeSpacing = 0f;
 
     public float rotation = 0f;
 
     public float heightOffset = 0f;
-    public float height = 0f;
 
-    public int zoom = 60;
-    private int minZoom = 25;
-    private int maxZoom = 100;
+    public int zoom = 0;
+    private int minZoom = 100;
+    private int maxZoom = 25;
+
+    public float rotationSpeed = 10f;
+    public float zoomSpeed = 10f;
 
 
     void Awake()
     {
         LoadValues();
-        zoom = minZoom;
+        currentZoom = leftEye.fieldOfView;
     }
 
     void Update()
@@ -72,20 +74,39 @@ public class EyesHandler : MonoBehaviour
         rightEye.transform.localPosition = new Vector3(-eyeSpacing / 2, 0, 0);
     }
 
+    float currentRotation;
+    float rotationVelocity = 0.0f;
     void UpdateRotation()
     {
-        gameObject.transform.localEulerAngles = new Vector3(gameObject.transform.localEulerAngles.x, rotation, gameObject.transform.localEulerAngles.z);
-    }
-    void UpdateHeight()
-    {
-        gameObject.transform.localPosition = new Vector3(0, height + heightOffset, 0);
+        currentRotation = Mathf.SmoothDampAngle(currentRotation, rotation, ref rotationVelocity, rotationSpeed * Time.deltaTime) % 360;
+        transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, currentRotation, transform.localEulerAngles.z);
     }
 
+
+    public void SetRotation(float rot)
+    {
+        rot = (360 + rot) % 360;
+        rotation = rot;
+    }
+
+    void UpdateHeight()
+    {
+        Vector3 pos = gameObject.transform.localPosition;
+        pos.y = pos.y + heightOffset;
+        gameObject.transform.localPosition = pos;
+    }
+
+    float currentZoom;
+    float zoomVelocity = 0.0f;
     void UpdateZoom()
     {
         if (zoom > 100) zoom = 100;
         if (zoom < 0) zoom = 0;
-        SetZoom((int)map(zoom, 0, 100, maxZoom, minZoom));
+
+        int targetZoom = (int)map(zoom, 0, 100, minZoom, maxZoom);
+        currentZoom = (int)Mathf.SmoothDamp(currentZoom, targetZoom, ref zoomVelocity, zoomSpeed * Time.deltaTime);
+
+        SetZoom(currentZoom);
     }
 
     float map(float s, float a1, float a2, float b1, float b2)
@@ -96,7 +117,7 @@ public class EyesHandler : MonoBehaviour
 
     public void ZoomIn()
     {
-        if (zoom <= minZoom) return;
+        if (zoom <= 0) return;
         zoom = zoom - 1;
         SetZoom(zoom);
     }
@@ -111,20 +132,19 @@ public class EyesHandler : MonoBehaviour
 
     public void LeftMove()
     {
-        if (rotation - 1 < 0) rotation = 360;
-        rotation = rotation - 1;
+        SetRotation(rotation - 1);
     }
 
     public void RightMove()
     {
-        if (rotation + 1 > 360) rotation = 0;
-        rotation = rotation + 1;
+        SetRotation(rotation + 1);
     }
 
-    public void SetZoom(int zoom)
+
+    public void SetZoom(float newZoom)
     {
-        leftEye.fieldOfView = zoom;
-        rightEye.fieldOfView = zoom;
+        leftEye.fieldOfView = newZoom;
+        rightEye.fieldOfView = newZoom;
     }
 
 

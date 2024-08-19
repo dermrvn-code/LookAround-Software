@@ -11,8 +11,9 @@ public class InteractableArrow : Interactable
     private Animation anim;
     private Material mat;
 
-    [SerializeField]
-    Color color;
+
+    public Color color;
+
     [SerializeField]
     Color hoverColor;
 
@@ -20,7 +21,10 @@ public class InteractableArrow : Interactable
     {
         anim = GetComponentInChildren<Animation>();
         mat = GetComponentInChildren<MeshRenderer>().material;
-        color = mat.color;
+        mat.color = color;
+
+        // Maker hoverColor a bit brighter than color
+        hoverColor = new Color(color.r * 2f, color.g * 2f, color.b * 2f, color.a);
     }
 
     public void SetRotation(int rotation)

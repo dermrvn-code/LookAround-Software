@@ -56,13 +56,13 @@ public class ProgressLoader : MonoBehaviour
 
     void ScaleProgress(float value)
     {
-        Vector3 pos = progress.transform.position;
+        Vector3 pos = progress.localPosition;
         Vector3 scale = progress.transform.localScale;
 
         scale.y = value;
-        pos.x = -transform.localScale.y + scale.y;
+        pos.y = scale.y - 1;
 
-        progress.transform.position = pos;
+        progress.localPosition = pos;
         progress.transform.localScale = scale;
     }
 }

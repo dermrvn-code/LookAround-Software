@@ -73,8 +73,16 @@ public class SceneManager : MonoBehaviour
 
     [SerializeField]
     List<string> texturePaths;
+    string currentSceneOverviewPath;
     public void LoadSceneOverview(string path, Action onComplete)
     {
+        if (currentSceneOverviewPath == path)
+        {
+            sc.ToStartScene();
+            if (settings != null) settings.CloseView();
+            return;
+        }
+        currentSceneOverviewPath = path;
         texturePaths = new List<string>();
         textureManager.ReleaseAllTextures();
 
@@ -113,7 +121,7 @@ public class SceneManager : MonoBehaviour
             }
             counter++;
         }
-        if (settings != null) settings.CloseView(); ;
+        if (settings != null) settings.CloseView();
 
         StartCoroutine(textureManager.LoadAllTextures(texturePaths, () =>
         {
@@ -202,11 +210,17 @@ public class SceneManager : MonoBehaviour
                 string action = element.Attribute("action").Value;
                 int rotation = int.Parse(element.Attribute("rotation").Value);
 
+                string color = "";
+                if (element.Attribute("color") != null)
+                {
+                    color = element.Attribute("color").Value;
+                }
+
                 se = new SceneElement(
                         SceneElement.ElementType.DirectionArrow,
                         text, x, y,
                         distance, xRotationOffset,
-                        action: action, rotation: rotation
+                        action: action, rotation: rotation, color: color
                     );
 
             }

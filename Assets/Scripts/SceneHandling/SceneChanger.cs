@@ -271,11 +271,16 @@ public class SceneChanger : MonoBehaviour
         dp.position.y = sceneElement.y;
         dp.distance = sceneElement.distance;
 
-        Interactable interactable = arrow.GetComponent<Interactable>();
-        interactable.OnInteract.AddListener(() =>
+        InteractableArrow interactableArrow = arrow.GetComponent<InteractableArrow>();
+        interactableArrow.OnInteract.AddListener(() =>
         {
             ActionParser(sceneElement.action);
         });
+
+        Color color = ColorUtility.TryParseHtmlString(sceneElement.color, out Color unityColor) ? unityColor : Color.white;
+        interactableArrow.color = color;
+
+
     }
 
     public static string[] actionTypes = { "toScene" };

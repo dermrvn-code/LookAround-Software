@@ -4,8 +4,6 @@
 
 > Explore far places with the digital periscope ✨
 
-<!-- <img src="https://user-images.githubusercontent.com/37766175/121809054-446bac80-cc96-11eb-9139-08c6d9ad2d88.png" /> -->
-
 ## 🔭 The Project
 
 This project consist of more components than just this.
@@ -19,6 +17,7 @@ This repository is the software part of the project.
 It covers the Unity project that is used inside the periscope to display any 360 videos, photos or streams.
 
 For an in-depth documentation of the software, please visit the [software documentation](https://dermrvn-code.github.io/LookAround/software/) page.
+
 ## 📜 License
 
 This software is licensed under the [MIT](/LICENSE).

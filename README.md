@@ -16,7 +16,7 @@ For a more detailed overview of the project, please visit [the project page](htt
 This repository is the software part of the project.
 It covers the Unity project that is used inside the periscope to display any 360 videos, photos or streams.
 
-For an in-depth documentation of the software, please visit the [software documentation](https://dermrvn-code.github.io/LookAround/software/) page.
+For an in-depth documentation of the software, please visit the [software documentation](https://dermrvn-code.github.io/LookAround/software) page.
 
 ## 🚀 Getting Started
 

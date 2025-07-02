@@ -13,9 +13,9 @@ public class SceneManager : MonoBehaviour
     TextureManager textureManager;
 
     XDocument worldOverview;
-    XDocument sceneOverview;
+    XDocument scenesOverview;
     ProgressLoader progressLoader;
-
+    LogoLoadingOverlay lolo;
     public Dictionary<string, Scene> sceneList = new Dictionary<string, Scene>();
 
     void Start()
@@ -24,6 +24,7 @@ public class SceneManager : MonoBehaviour
         sc = FindObjectOfType<SceneChanger>();
         textureManager = FindObjectOfType<TextureManager>();
         progressLoader = FindObjectOfType<ProgressLoader>();
+        lolo = FindObjectOfType<LogoLoadingOverlay>();
 
         if (isSceneBuilder()) return;
         sc.ToMainScene();
@@ -72,25 +73,26 @@ public class SceneManager : MonoBehaviour
     }
 
     List<string> texturePaths;
-    string currentSceneOverviewPath;
-    public void LoadSceneOverview(string path, Action onComplete)
+    string currentScenesOverviewPath;
+    public void LoadScenesOverview(string path, Action onComplete)
     {
-        if (currentSceneOverviewPath == path)
+        if (currentScenesOverviewPath == path)
         {
             sc.ToStartScene();
             if (settings != null) settings.CloseView();
             return;
         }
-        currentSceneOverviewPath = path;
+        currentScenesOverviewPath = path;
         texturePaths = new List<string>();
         textureManager.ReleaseAllTextures();
 
         sceneList = new Dictionary<string, Scene>();
         string mainFolder = Path.GetDirectoryName(Settings.worldsOverviewFile);
-        string sceneOverviewPath = Path.Combine(mainFolder, path);
-        if (!File.Exists(sceneOverviewPath)) Debug.LogWarning("The scene overview file does not exist: " + sceneOverviewPath);
-        sceneOverview = XDocument.Load(sceneOverviewPath);
-        var scenes = sceneOverview.Descendants("Scene");
+        string scenesOverviewPath = Path.Combine(mainFolder, path);
+        if (!File.Exists(scenesOverviewPath)) Debug.LogWarning("The scene overview file does not exist: " + scenesOverviewPath);
+        scenesOverview = XDocument.Load(scenesOverviewPath);
+        var scenesList = scenesOverview.Root.Element("Scenes");
+        var scenes = scenesList.Descendants("Scene");
 
         int counter = 0;
         foreach (var scene in scenes)
@@ -105,7 +107,7 @@ public class SceneManager : MonoBehaviour
                 if (startScene.Value.ToLower() == "true") isStartScene = true;
             }
 
-            string sceneFolder = Path.GetDirectoryName(sceneOverviewPath);
+            string sceneFolder = Path.GetDirectoryName(scenesOverviewPath);
             Scene s = LoadScene(sceneName, sceneFolder, scenePath, isStartScene);
 
             if (s.Type != Scene.MediaType.Photo) return;
@@ -120,6 +122,33 @@ public class SceneManager : MonoBehaviour
             }
             counter++;
         }
+
+
+        var logoList = scenesOverview.Root.Element("Logos");
+        if (logoList != null)
+        {
+            var logos = logoList.Descendants("Logo");
+            foreach (var logo in logos)
+            {
+                string logoSource = logo.Attribute("source").Value;
+                string id_str = logo.Attribute("id").Value;
+                string backgroundColor = logo.Attribute("backgroundColor")?.Value ?? "";
+
+                if (int.TryParse(id_str, out int id))
+                {
+                    string logoPath = Path.Combine(Path.GetDirectoryName(scenesOverviewPath), logoSource);
+                    if (File.Exists(logoPath))
+                    {
+                        lolo.LoadLogo(id, logoPath, backgroundColor);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Logo file does not exist: " + logoPath);
+                    }
+                }
+            }
+        }
+
         if (settings != null) settings.CloseView();
 
         StartCoroutine(textureManager.LoadAllTextures(texturePaths, () =>

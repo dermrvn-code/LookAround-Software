@@ -250,7 +250,7 @@ public class Settings : MonoBehaviour
 
     private void LoadValues()
     {
-        worldsOverviewFile = PlayerPrefs.GetString("sceneOverviewFile", "");
+        worldsOverviewFile = PlayerPrefs.GetString("scenesOverviewFile", "");
         loadWorldOnBoot = PlayerPrefs.GetInt("loadStartSceenOnBoot", 0) == 1 ? true : false;
         SceneManager.currentWorld = PlayerPrefs.GetString("currentWorld", "");
         SerialManager.standardConnect = PlayerPrefs.GetInt("standardConnect", 0) == 1 ? true : false;
@@ -260,7 +260,7 @@ public class Settings : MonoBehaviour
 
     private void SaveValues()
     {
-        PlayerPrefs.SetString("sceneOverviewFile", worldsOverviewFile);
+        PlayerPrefs.SetString("scenesOverviewFile", worldsOverviewFile);
         PlayerPrefs.SetInt("loadStartSceenOnBoot", loadWorldOnBoot ? 1 : 0);
         PlayerPrefs.SetString("currentWorld", SceneManager.currentWorld);
         PlayerPrefs.SetInt("standardConnect", SerialManager.standardConnect ? 1 : 0);

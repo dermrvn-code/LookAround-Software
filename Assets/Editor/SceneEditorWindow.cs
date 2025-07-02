@@ -135,7 +135,7 @@ public class SceneEditorWindow : EditorWindow
 
         if (GUILayout.Button("Save Overview"))
         {
-            SaveSceneOverview();
+            SaveScenesOverview();
         }
     }
 
@@ -148,7 +148,7 @@ public class SceneEditorWindow : EditorWindow
         }
     }
 
-    private void SaveSceneOverview()
+    private void SaveScenesOverview()
     {
         XmlDocument doc = new XmlDocument();
         XmlElement root = doc.CreateElement("Scenes");

@@ -9,7 +9,6 @@ using UnityEngine.Video;
 
 public class SceneChanger : MonoBehaviour
 {
-    public LogoLoadingOverlay loadingOverlay;
     public GameObject particlesGameobject;
     ParticleSystem particles;
 
@@ -27,6 +26,7 @@ public class SceneChanger : MonoBehaviour
     InteractionHandler ih;
     Settings settings;
     TextureManager textureManager;
+    LogoLoadingOverlay loadingOverlay;
 
     Scene currentScene;
 
@@ -36,6 +36,8 @@ public class SceneChanger : MonoBehaviour
         ih = FindObjectOfType<InteractionHandler>();
         settings = FindObjectOfType<Settings>();
         textureManager = FindObjectOfType<TextureManager>();
+                loadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
+
 
         // To prevent particles in the editor window
         particlesGameobject.SetActive(true);

@@ -6,32 +6,34 @@ using UnityEngine;
 public class DomePosition : MonoBehaviour
 {
 
-    private Transform elementTransform;
+    protected Transform elementTransform;
 
     public Vector2 position;
     public int distance = 10;
     public float xRotOffset = 0;
 
 
-    void Start()
+    protected virtual void Start()
     {
         elementTransform = GetComponent<Transform>();
     }
 
 
-    void Update()
+    protected virtual void Update()
     {
-        if(position.x < 0){
-            position.x = 360+position.x;
+        if (position.x < 0)
+        {
+            position.x = 360 + position.x;
         }
-        if(position.y < 0){
-            position.y = 360+position.y;
+        if (position.y < 0)
+        {
+            position.y = 360 + position.y;
         }
         Vector3 cartesianPosition = PolarToCartesian(position);
         SetRectPosition(cartesianPosition);
     }
 
-    void SetRectPosition(Vector3 newPosition)
+    protected void SetRectPosition(Vector3 newPosition)
     {
         elementTransform.localPosition = newPosition;
         elementTransform.rotation = Quaternion.Euler(position.y + xRotOffset, position.x, 0);

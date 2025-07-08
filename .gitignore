@@ -74,6 +74,7 @@ crashlytics-build.properties
 
 /[Aa]ssets/360Images/*
 /[Aa]ssets/360Videos/*
+/**/GLTFs/*
 
 /Scenes/*
 /Worlds/*

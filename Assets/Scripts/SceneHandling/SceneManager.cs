@@ -279,21 +279,22 @@ public class SceneManager : MonoBehaviour
             if (elementType == "text")
             {
                 string action = element.Attribute("action").Value;
-                se = new SceneElement(
-                        SceneElement.ElementType.Text,
-                        text, x, y,
-                        distance, xRotationOffset,
+                se = new SceneElementText(
+                        text: text,
+                        x: x, y: y,
+                        distance: distance,
+                        xRotationOffset: xRotationOffset,
                         action: action
                     );
             }
             else if (elementType == "textbox")
             {
                 string icon = element.Attribute("icon").Value;
-                se = new SceneElement(
-                        SceneElement.ElementType.Textbox,
-                        text, x, y,
-                        distance, xRotationOffset,
-                        icon: icon
+                se = new SceneElementTextbox(
+                        text: text, icon: icon,
+                        x: x, y: y,
+                        distance: distance,
+                        xRotationOffset: xRotationOffset
                     );
             }
             else if (elementType == "directionarrow")
@@ -307,11 +308,18 @@ public class SceneManager : MonoBehaviour
                     color = element.Attribute("color").Value;
                 }
 
-                se = new SceneElement(
-                        SceneElement.ElementType.DirectionArrow,
-                        text, x, y,
-                        distance, xRotationOffset,
-                        action: action, rotation: rotation, color: color
+                string icon = "info";
+                if (element.Attribute("icon") != null)
+                {
+                    icon = element.Attribute("icon").Value;
+                }
+
+                se = new SceneElementArrow(
+                        x: x, y: y,
+                        distance: distance,
+                        xRotationOffset: xRotationOffset,
+                        icon: icon, rotation: rotation,
+                        color: color, action: action
                     );
 
             }

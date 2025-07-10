@@ -36,7 +36,7 @@ public class SceneChanger : MonoBehaviour
         ih = FindObjectOfType<InteractionHandler>();
         settings = FindObjectOfType<Settings>();
         textureManager = FindObjectOfType<TextureManager>();
-                loadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
+        loadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
 
 
         // To prevent particles in the editor window
@@ -197,24 +197,24 @@ public class SceneChanger : MonoBehaviour
 
         foreach (var sceneElement in sceneElements)
         {
-            if (sceneElement.type == SceneElement.ElementType.Text)
+            if (sceneElement is SceneElementText)
             {
-                LoadTextElement(sceneElement);
+                LoadTextElement((SceneElementText)sceneElement);
             }
-            else if (sceneElement.type == SceneElement.ElementType.Textbox)
+            else if (sceneElement is SceneElementTextbox)
             {
-                LoadTextboxElement(sceneElement);
+                LoadTextboxElement((SceneElementTextbox)sceneElement);
             }
-            else if (sceneElement.type == SceneElement.ElementType.DirectionArrow)
+            else if (sceneElement is SceneElementArrow)
             {
-                LoadDirectionArrow(sceneElement);
+                LoadDirectionArrow((SceneElementArrow)sceneElement);
             }
         }
     }
 
     [SerializeField]
     TMP_Text textPrefab;
-    public void LoadTextElement(SceneElement sceneElement)
+    public void LoadTextElement(SceneElementText sceneElement)
     {
         var text = Instantiate(textPrefab, sceneElementsContainer.transform);
         text.name = sceneElement.text;
@@ -234,16 +234,28 @@ public class SceneChanger : MonoBehaviour
     GameObject textboxPrefab;
     public Sprite info, warning, question, play;
 
-    public void LoadTextboxElement(SceneElement sceneElement)
+    public void LoadTextboxElement(SceneElementTextbox sceneElement)
     {
         var text = Instantiate(textboxPrefab, sceneElementsContainer.transform);
         var tmptext = text.GetComponentInChildren<TMP_Text>();
         var spriteRenderer = text.GetComponentInChildren<SpriteRenderer>();
-        tmptext.text = sceneElement.text;
+        var meshRenderer = text.GetComponentInChildren<MeshRenderer>();
         DomePosition dp = text.GetComponent<DomePosition>();
+
+        Color bgColor = Color.white;
+        ColorUtility.TryParseHtmlString(sceneElement.color, out bgColor);
+
+        float luminance = 0.299f * bgColor.r + 0.587f * bgColor.g + 0.114f * bgColor.b;
+        Color bestTextColor = luminance > 0.7f ? Color.black : Color.white;
+
+        tmptext.text = sceneElement.text;
+        tmptext.color = bestTextColor;
+        spriteRenderer.color = bestTextColor;
+
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
         dp.distance = sceneElement.distance;
+        meshRenderer.material.color = bgColor;
 
         Sprite sprite;
         switch (sceneElement.icon)
@@ -277,7 +289,7 @@ public class SceneChanger : MonoBehaviour
 
     [SerializeField]
     GameObject arrowPrefab;
-    public void LoadDirectionArrow(SceneElement sceneElement)
+    public void LoadDirectionArrow(SceneElementArrow sceneElement)
     {
         var arrow = Instantiate(arrowPrefab, sceneElementsContainer.transform);
 

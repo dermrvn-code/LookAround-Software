@@ -24,13 +24,11 @@ public class TextBox : Hoverable
 
     TMP_Text tmptext;
     Color textColor;
-    Color iconColor;
 
     bool stayOpen = false;
     bool stayClosed = true;
     void Update()
     {
-
         if (isOpen)
         {
             stayClosed = false;
@@ -49,7 +47,6 @@ public class TextBox : Hoverable
     {
         tmptext = text.GetComponent<TMP_Text>();
         textColor = tmptext.color;
-        iconColor = icon.color;
         tmptext.color = Color.clear;
         text.sizeDelta = new Vector2(scale.x * 0.92f, scale.y * 0.92f);
         closedScale.z = background.transform.localScale.z;

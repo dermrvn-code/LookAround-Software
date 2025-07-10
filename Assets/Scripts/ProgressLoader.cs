@@ -22,6 +22,10 @@ public class ProgressLoader : MonoBehaviour
     float currentProgressValue = 0;
     float progressSpeed = 2f;
 
+    int currentStep;
+    int totalSteps;
+
+
     void Update()
     {
         progress.gameObject.SetActive(show);
@@ -38,11 +42,39 @@ public class ProgressLoader : MonoBehaviour
         }
     }
 
-
-    public void UpdateBar(float value, string message)
+    Action onFull;
+    public void OnFull(Action action)
     {
-        show = value < 1;
-        progressValue = value;
+        onFull = () =>
+        {
+            action?.Invoke();
+            onFull = null;
+        };
+    }
+
+    public void UpdateBarIncreaseSteps(int step, int totalSteps, string message)
+    {
+        currentStep += step;
+        this.totalSteps = totalSteps;
+        UpdateBar(message);
+    }
+
+    public void UpdateBar(int step, int totalSteps, string message)
+    {
+        currentStep = step;
+        this.totalSteps = totalSteps;
+        UpdateBar(message);
+    }
+
+    public void UpdateBar(string message)
+    {
+        show = currentStep < totalSteps;
+        progressValue = (float)currentStep / totalSteps;
+
+        if (!show)
+        {
+            onFull?.Invoke();
+        }
         UpdateProgressText(message);
     }
 

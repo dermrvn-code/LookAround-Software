@@ -6,20 +6,20 @@ using UnityEngine;
 public class DomePosition : MonoBehaviour
 {
 
-    protected Transform elementTransform;
+    Transform elementTransform;
 
     public Vector2 position;
     public int distance = 10;
     public float xRotOffset = 0;
 
 
-    protected virtual void Start()
+    void Start()
     {
         elementTransform = GetComponent<Transform>();
     }
 
 
-    protected virtual void Update()
+    void Update()
     {
         if (position.x < 0)
         {
@@ -33,7 +33,7 @@ public class DomePosition : MonoBehaviour
         SetRectPosition(cartesianPosition);
     }
 
-    protected void SetRectPosition(Vector3 newPosition)
+    void SetRectPosition(Vector3 newPosition)
     {
         elementTransform.localPosition = newPosition;
         elementTransform.rotation = Quaternion.Euler(position.y + xRotOffset, position.x, 0);

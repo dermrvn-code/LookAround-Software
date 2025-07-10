@@ -11,11 +11,12 @@ public class SceneManager : MonoBehaviour
     SceneChanger sc;
     Settings settings;
     TextureManager textureManager;
+    ModelManager modelManager;
 
     XDocument worldOverview;
     XDocument scenesOverview;
     ProgressLoader progressLoader;
-    LogoLoadingOverlay lolo;
+    LogoLoadingOverlay logoLoadingOverlay;
     public Dictionary<string, Scene> sceneList = new Dictionary<string, Scene>();
 
     void Start()
@@ -23,8 +24,9 @@ public class SceneManager : MonoBehaviour
         settings = FindObjectOfType<Settings>();
         sc = FindObjectOfType<SceneChanger>();
         textureManager = FindObjectOfType<TextureManager>();
+        modelManager = FindObjectOfType<ModelManager>();
         progressLoader = FindObjectOfType<ProgressLoader>();
-        lolo = FindObjectOfType<LogoLoadingOverlay>();
+        logoLoadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
 
         if (isSceneBuilder()) return;
         sc.ToMainScene();
@@ -73,6 +75,7 @@ public class SceneManager : MonoBehaviour
     }
 
     List<string> texturePaths;
+    Dictionary<string, string> modelPaths = new Dictionary<string, string>();
     string currentScenesOverviewPath;
     public void LoadScenesOverview(string path, Action onComplete)
     {
@@ -86,11 +89,54 @@ public class SceneManager : MonoBehaviour
         texturePaths = new List<string>();
         textureManager.ReleaseAllTextures();
 
+        modelPaths = new Dictionary<string, string>();
+        modelManager.UnloadAllModels();
+
         sceneList = new Dictionary<string, Scene>();
         string mainFolder = Path.GetDirectoryName(Settings.worldsOverviewFile);
         string scenesOverviewPath = Path.Combine(mainFolder, path);
         if (!File.Exists(scenesOverviewPath)) Debug.LogWarning("The scene overview file does not exist: " + scenesOverviewPath);
         scenesOverview = XDocument.Load(scenesOverviewPath);
+
+        LoadScenes(scenesOverviewPath);
+        LoadLogos(scenesOverviewPath);
+        LoadModels(scenesOverviewPath);
+
+        if (settings != null) settings.CloseView();
+
+        int maxLoadingSteps = texturePaths.Count + modelPaths.Count;
+
+        progressLoader.OnFull(() =>
+        {
+            onComplete?.Invoke();
+        });
+
+        StartCoroutine(textureManager.LoadAllTextures(texturePaths,
+        (float progress, string path) => // onProgress
+        {
+            progressLoader.UpdateBarIncreaseSteps(1, maxLoadingSteps, Path.GetFileName(path));
+        },
+        () => // onComplete
+        {
+            Debug.Log("Textures preloaded!");
+        }));
+
+        foreach (var model in modelPaths)
+        {
+            string modelName = model.Key;
+            string modelPath = model.Value;
+
+            modelManager.LoadModel(modelPath, modelName, () =>
+            {
+                progressLoader.UpdateBarIncreaseSteps(1, maxLoadingSteps, Path.GetFileName(modelPath));
+            });
+        }
+
+    }
+
+
+    void LoadScenes(string scenesOverviewPath)
+    {
         var scenesList = scenesOverview.Root.Element("Scenes");
         var scenes = scenesList.Descendants("Scene");
 
@@ -122,8 +168,10 @@ public class SceneManager : MonoBehaviour
             }
             counter++;
         }
+    }
 
-
+    void LoadLogos(string scenesOverviewPath)
+    {
         var logoList = scenesOverview.Root.Element("Logos");
         if (logoList != null)
         {
@@ -139,7 +187,7 @@ public class SceneManager : MonoBehaviour
                     string logoPath = Path.Combine(Path.GetDirectoryName(scenesOverviewPath), logoSource);
                     if (File.Exists(logoPath))
                     {
-                        lolo.LoadLogo(id, logoPath, backgroundColor);
+                        logoLoadingOverlay.LoadLogo(id, logoPath, backgroundColor);
                     }
                     else
                     {
@@ -148,14 +196,29 @@ public class SceneManager : MonoBehaviour
                 }
             }
         }
+    }
 
-        if (settings != null) settings.CloseView();
-
-        StartCoroutine(textureManager.LoadAllTextures(texturePaths, () =>
+    void LoadModels(string scenesOverviewPath)
+    {
+        var modelsList = scenesOverview.Root.Element("Models");
+        if (modelsList != null)
         {
-            Debug.Log("Textures preloaded!");
-            onComplete?.Invoke();
-        }));
+            var models = modelsList.Descendants("Model");
+            foreach (var model in models)
+            {
+                string modelSource = model.Attribute("source").Value;
+                string modelName = model.Attribute("name").Value;
+
+                string modelPath = Path.Combine(Path.GetDirectoryName(scenesOverviewPath), modelSource);
+
+                if (File.Exists(modelPath))
+                {
+                    modelPaths.Add(modelName, modelPath);
+                    return;
+                }
+                Debug.LogWarning("Model file does not exist: " + modelPath);
+            }
+        }
     }
 
     Scene LoadScene(string sceneName, string mainFolder, string scenePath, bool isStartScene)

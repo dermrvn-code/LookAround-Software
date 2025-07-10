@@ -20,23 +20,36 @@ public class ModelManager : MonoBehaviour
     [SerializeField]
     GameObject siding;
 
+    [SerializeField]
+    Renderer domeRenderer;
+
 
     void Start()
     {
+        if (domeRenderer == null)
+        {
+            Debug.LogWarning("No Renderer found on dome.");
+        }
+
         if (sceneElementsContainer == null)
         {
             Debug.LogWarning("sceneElementsContainer or dome is not assigned.");
-            return;
         }
     }
 
-    public GameObject DisplayModel(string modelName)
+
+    [SerializeField]
+    InteractableModel containerPrefab;
+    public DomePosition DisplayModel(string modelName)
     {
         if (loadedModels.TryGetValue(modelName, out GameObject model))
         {
-            model.transform.SetParent(sceneElementsContainer.transform, false);
+            var container = Instantiate(containerPrefab, sceneElementsContainer.transform);
+
             model.SetActive(true);
-            return model;
+            model.transform.SetParent(container.transform, false);
+
+            return container.GetComponent<DomePosition>();
         }
 
         Debug.LogWarning("Model not found in loaded models: " + modelName);
@@ -93,6 +106,53 @@ public class ModelManager : MonoBehaviour
         Debug.LogWarning("Model not found in loaded models: " + modelName);
     }
 
+    float realismFactor = 0.3f;
+    void NormalizeModel(GameObject model)
+    {
+        model.transform.localPosition = Vector3.zero;
+        model.transform.localRotation = Quaternion.identity;
+
+        Renderer resultRenderer = model.GetComponent<Renderer>();
+        if (resultRenderer == null)
+        {
+            resultRenderer = model.GetComponentInChildren<Renderer>();
+        }
+
+        if (resultRenderer == null)
+        {
+            Debug.LogWarning("No Renderer found on result to calculate size.");
+            return;
+        }
+
+        Vector3 resultSize = resultRenderer.bounds.size;
+        Vector3 domeSize = domeRenderer.bounds.size;
+
+        float resultMax = Mathf.Max(resultSize.x, resultSize.y, resultSize.z);
+
+        if (resultMax == 0)
+        {
+            Debug.LogWarning("Result size is zero, cannot scale.");
+            return;
+        }
+
+        float scaleFactor;
+        if (resultMax == resultSize.x)
+        {
+            scaleFactor = domeSize.x / resultMax;
+        }
+        else if (resultMax == resultSize.y)
+        {
+            scaleFactor = domeSize.y / resultMax;
+        }
+        else
+        {
+            scaleFactor = domeSize.z / resultMax;
+        }
+        scaleFactor = scaleFactor * realismFactor; // realistic scaling
+        Debug.Log($"Scaling model {model.name} by factor: {scaleFactor}");
+        model.transform.localScale = Vector3.one * scaleFactor;
+    }
+
     void IntegrateModel(string modelName, GameObject result)
     {
         if (loadedModels.Count >= maxModels)
@@ -106,13 +166,15 @@ public class ModelManager : MonoBehaviour
             Debug.LogWarning("Model already loaded: " + result.name);
             return;
         }
-        loadedModels.Add(modelName, result);
+
+        NormalizeModel(result);
         result.transform.SetParent(siding.transform, false);
-        result.AddComponent<DomePosition3DObject>();
-        result.SetActive(false);
+        result.gameObject.SetActive(false);
+
+        loadedModels.Add(modelName, result);
     }
 
-    void UnloadAllModels()
+    public void UnloadAllModels()
     {
         foreach (var model in loadedModels.Values)
         {

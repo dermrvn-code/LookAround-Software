@@ -22,7 +22,7 @@ public class TextureManager : MonoBehaviour
     }
 
 
-    public IEnumerator LoadAllTextures(List<string> texturePaths, Action onComplete = null)
+    public IEnumerator LoadAllTextures(List<string> texturePaths, Action<float, string> onProgress, Action onComplete = null)
     {
         textureCache.Clear();
         lruList.Clear();
@@ -36,12 +36,7 @@ public class TextureManager : MonoBehaviour
             }
             var texturePath = texturePaths[i];
 
-            float progressFull = texturePaths.Count;
-            if (maxTexturesToKeep < texturePaths.Count)
-            {
-                progressFull = maxTexturesToKeep;
-            }
-            progressLoader.UpdateBar((i + 1) / progressFull, Path.GetFileName(texturePath));
+            onProgress?.Invoke(i + 1, Path.GetFileName(texturePath));
 
             yield return StartCoroutine(LoadTextureWithEviction(texturePath, null));
         }

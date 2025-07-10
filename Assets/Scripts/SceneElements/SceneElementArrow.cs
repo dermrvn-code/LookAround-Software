@@ -1,21 +1,17 @@
 public class SceneElementArrow : SceneElement
 {
-    public string icon;
     public int rotation;
     public string color;
-    public string action;
 
     public SceneElementArrow(
         int x = 0, int y = 0,
         int distance = 0, int xRotationOffset = -20,
-        string icon = null, int rotation = 0,
+        int rotation = 0,
         string color = null, string action = null)
-        : base(x, y, distance, xRotationOffset)
+        : base(x, y, distance, xRotationOffset, action)
     {
-        this.icon = icon;
         this.rotation = rotation;
         this.color = color;
-        this.action = action;
     }
 
     public override string ToString()

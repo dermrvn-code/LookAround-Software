@@ -274,6 +274,12 @@ public class SceneManager : MonoBehaviour
                 xRotationOffset = int.Parse(element.Attribute("xRotationOffset").Value);
             }
 
+            string textcolor = "";
+            if (element.Attribute("color") != null)
+            {
+                textcolor = element.Attribute("color").Value;
+            }
+
 
             SceneElement se;
             if (elementType == "text")
@@ -284,7 +290,7 @@ public class SceneManager : MonoBehaviour
                         x: x, y: y,
                         distance: distance,
                         xRotationOffset: xRotationOffset,
-                        action: action
+                        action: action, color: textcolor
                     );
             }
             else if (elementType == "textbox")
@@ -302,24 +308,18 @@ public class SceneManager : MonoBehaviour
                 string action = element.Attribute("action").Value;
                 int rotation = int.Parse(element.Attribute("rotation").Value);
 
-                string color = "";
+                string arrowcolor = "";
                 if (element.Attribute("color") != null)
                 {
-                    color = element.Attribute("color").Value;
-                }
-
-                string icon = "info";
-                if (element.Attribute("icon") != null)
-                {
-                    icon = element.Attribute("icon").Value;
+                    arrowcolor = element.Attribute("color").Value;
                 }
 
                 se = new SceneElementArrow(
                         x: x, y: y,
                         distance: distance,
                         xRotationOffset: xRotationOffset,
-                        icon: icon, rotation: rotation,
-                        color: color, action: action
+                        rotation: rotation,
+                        color: arrowcolor, action: action
                     );
 
             }

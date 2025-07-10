@@ -221,13 +221,20 @@ public class SceneChanger : MonoBehaviour
     public void LoadTextElement(SceneElementText sceneElement)
     {
         var text = Instantiate(textPrefab, sceneElementsContainer.transform);
+
+        Color textColor = Color.white;
+        ColorUtility.TryParseHtmlString(sceneElement.color, out textColor);
+
         text.name = sceneElement.text;
         text.text = sceneElement.text;
+        text.color = textColor;
+
         DomePosition dp = text.GetComponent<DomePosition>();
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
         dp.distance = sceneElement.distance;
         dp.xRotOffset = sceneElement.xRotationOffset;
+
         Interactable interactable = text.GetComponent<Interactable>();
         interactable.OnInteract.AddListener(() =>
         {

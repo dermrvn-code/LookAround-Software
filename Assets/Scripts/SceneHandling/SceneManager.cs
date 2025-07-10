@@ -323,6 +323,19 @@ public class SceneManager : MonoBehaviour
                     );
 
             }
+            else if (elementType == "model")
+            {
+                string name = element.Attribute("name").Value;
+                string action = element.Attribute("action").Value;
+
+                se = new SceneElementModel(
+                        modelName: name,
+                        x: x, y: y,
+                        distance: distance,
+                        xRotationOffset: xRotationOffset,
+                        action: action
+                    );
+            }
             else
             {
                 Debug.Log("Element doesnt match any type : " + elementType);

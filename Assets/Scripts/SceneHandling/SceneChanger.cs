@@ -24,9 +24,9 @@ public class SceneChanger : MonoBehaviour
     public VideoPlayer vp;
     SceneManager sm;
     InteractionHandler ih;
-    Settings settings;
     TextureManager textureManager;
     LogoLoadingOverlay loadingOverlay;
+    ModelManager modelManager;
 
     Scene currentScene;
 
@@ -34,8 +34,8 @@ public class SceneChanger : MonoBehaviour
     {
         sm = FindObjectOfType<SceneManager>();
         ih = FindObjectOfType<InteractionHandler>();
-        settings = FindObjectOfType<Settings>();
         textureManager = FindObjectOfType<TextureManager>();
+        modelManager = FindObjectOfType<ModelManager>();
         loadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
 
 
@@ -139,7 +139,6 @@ public class SceneChanger : MonoBehaviour
             LoadSceneElements(scene.SceneElements);
             if (ih != null) ih.updateElementsNextFrame = true;
 
-
             try
             {
                 if (!File.Exists(scene.Source))
@@ -147,7 +146,6 @@ public class SceneChanger : MonoBehaviour
                     Debug.LogWarning("Scene media " + scene.Source + " does not exist");
                     return;
                 }
-
 
                 if (scene.Type == Scene.MediaType.Video)
                 {
@@ -183,6 +181,8 @@ public class SceneChanger : MonoBehaviour
 
     public void LoadSceneElements(List<SceneElement> sceneElements)
     {
+        modelManager.HideAllModels();
+
         var children = new List<GameObject>();
         foreach (Transform child in sceneElementsContainer.transform) children.Add(child.gameObject);
         if (Application.isPlaying)
@@ -207,7 +207,11 @@ public class SceneChanger : MonoBehaviour
             }
             else if (sceneElement is SceneElementArrow)
             {
-                LoadDirectionArrow((SceneElementArrow)sceneElement);
+                LoadArrow((SceneElementArrow)sceneElement);
+            }
+            else if (sceneElement is SceneElementModel)
+            {
+                LoadModel((SceneElementModel)sceneElement);
             }
         }
     }
@@ -223,6 +227,7 @@ public class SceneChanger : MonoBehaviour
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
         dp.distance = sceneElement.distance;
+        dp.xRotOffset = sceneElement.xRotationOffset;
         Interactable interactable = text.GetComponent<Interactable>();
         interactable.OnInteract.AddListener(() =>
         {
@@ -255,6 +260,7 @@ public class SceneChanger : MonoBehaviour
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
         dp.distance = sceneElement.distance;
+        dp.xRotOffset = sceneElement.xRotationOffset;
         meshRenderer.material.color = bgColor;
 
         Sprite sprite;
@@ -289,7 +295,7 @@ public class SceneChanger : MonoBehaviour
 
     [SerializeField]
     GameObject arrowPrefab;
-    public void LoadDirectionArrow(SceneElementArrow sceneElement)
+    public void LoadArrow(SceneElementArrow sceneElement)
     {
         var arrow = Instantiate(arrowPrefab, sceneElementsContainer.transform);
 
@@ -299,6 +305,7 @@ public class SceneChanger : MonoBehaviour
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
         dp.distance = sceneElement.distance;
+        dp.xRotOffset = sceneElement.xRotationOffset;
 
         InteractableArrow interactableArrow = arrow.GetComponent<InteractableArrow>();
         interactableArrow.OnInteract.AddListener(() =>
@@ -308,8 +315,22 @@ public class SceneChanger : MonoBehaviour
 
         Color color = ColorUtility.TryParseHtmlString(sceneElement.color, out Color unityColor) ? unityColor : Color.white;
         interactableArrow.color = color;
+    }
 
+    public void LoadModel(SceneElementModel sceneElement)
+    {
+        DomePosition dp = modelManager.DisplayModel(sceneElement.modelName);
 
+        dp.position.x = sceneElement.x;
+        dp.position.y = sceneElement.y;
+        dp.distance = sceneElement.distance;
+        dp.xRotOffset = sceneElement.xRotationOffset;
+
+        InteractableModel interactableModel = dp.GetComponent<InteractableModel>();
+        interactableModel.OnInteract.AddListener(() =>
+        {
+            ActionParser(sceneElement.action);
+        });
     }
 
     public static string[] actionTypes = { "toScene" };

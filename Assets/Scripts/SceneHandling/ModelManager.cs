@@ -1,8 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Siccity.GLTFUtility;
-using System;
 using UnityEngine.Events;
 
 
@@ -46,8 +46,9 @@ public class ModelManager : MonoBehaviour
         {
             var container = Instantiate(containerPrefab, sceneElementsContainer.transform);
 
+            var animContainer = container.GetComponent<InteractableModel>().animationContainer;
             model.SetActive(true);
-            model.transform.SetParent(container.transform, false);
+            model.transform.SetParent(animContainer.transform, false);
 
             return container.GetComponent<DomePosition>();
         }
@@ -66,6 +67,18 @@ public class ModelManager : MonoBehaviour
         }
 
         Debug.LogWarning("Model not found in loaded models: " + modelName);
+    }
+
+    public void HideAllModels(string exceptModelName = null)
+    {
+        foreach (var model in loadedModels)
+        {
+            if (model.Key != exceptModelName && model.Value != null)
+            {
+                model.Value.transform.SetParent(siding.transform, false);
+                model.Value.SetActive(false);
+            }
+        }
     }
 
     public void HideAllModels()

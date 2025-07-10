@@ -7,7 +7,7 @@ public class SceneElementArrow : SceneElement
 
     public SceneElementArrow(
         int x = 0, int y = 0,
-        int distance = 0, int xRotationOffset = 0,
+        int distance = 0, int xRotationOffset = -20,
         string icon = null, int rotation = 0,
         string color = null, string action = null)
         : base(x, y, distance, xRotationOffset)
@@ -20,6 +20,6 @@ public class SceneElementArrow : SceneElement
 
     public override string ToString()
     {
-        return $"DirectionArrow with color {color} at x:{x} y:{y}, a distance of {distance}, and rotation of '{rotation}' and action '{action}'";
+        return $"Arrow with color {color} at x:{x} y:{y}, a distance of {distance}, and rotation of '{rotation}' and action '{action}'";
     }
 }

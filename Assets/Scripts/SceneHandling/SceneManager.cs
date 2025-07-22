@@ -16,6 +16,7 @@ public class SceneManager : MonoBehaviour
     XDocument worldOverview;
     XDocument scenesOverview;
     ProgressLoader progressLoader;
+    SpriteManager spriteManager;
     LogoLoadingOverlay logoLoadingOverlay;
     public Dictionary<string, Scene> sceneList = new Dictionary<string, Scene>();
 
@@ -26,6 +27,8 @@ public class SceneManager : MonoBehaviour
         textureManager = FindObjectOfType<TextureManager>();
         modelManager = FindObjectOfType<ModelManager>();
         progressLoader = FindObjectOfType<ProgressLoader>();
+        spriteManager = FindObjectOfType<SpriteManager>();
+
         logoLoadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
 
         if (isSceneBuilder()) return;
@@ -76,6 +79,8 @@ public class SceneManager : MonoBehaviour
 
     List<string> texturePaths;
     Dictionary<string, string> modelPaths = new Dictionary<string, string>();
+    Dictionary<int, string> spritePaths = new Dictionary<int, string>();
+
     string currentScenesOverviewPath;
     public void LoadScenesOverview(string path, Action onComplete)
     {
@@ -104,7 +109,7 @@ public class SceneManager : MonoBehaviour
 
         if (settings != null) settings.CloseView();
 
-        int maxLoadingSteps = texturePaths.Count + modelPaths.Count;
+        int maxLoadingSteps = texturePaths.Count + modelPaths.Count + spritePaths.Count;
 
         progressLoader.OnFull(() =>
         {
@@ -121,6 +126,12 @@ public class SceneManager : MonoBehaviour
             Debug.Log("Textures preloaded!");
         }));
 
+        foreach (var spritePath in spritePaths)
+        {
+            spriteManager.LoadSprite(spritePath.Key, spritePath.Value);
+            progressLoader.UpdateBarIncreaseSteps(1, maxLoadingSteps, Path.GetFileName(spritePath.Value));
+        }
+
         foreach (var model in modelPaths)
         {
             string modelName = model.Key;
@@ -135,7 +146,9 @@ public class SceneManager : MonoBehaviour
     }
 
 
-    void LoadScenes(string scenesOverviewPath)
+
+
+    void LoadScenes(string sceneOverviewPath)
     {
         var scenesList = scenesOverview.Root.Element("Scenes");
         var scenes = scenesList.Descendants("Scene");
@@ -153,24 +166,26 @@ public class SceneManager : MonoBehaviour
                 if (startScene.Value.ToLower() == "true") isStartScene = true;
             }
 
-            string sceneFolder = Path.GetDirectoryName(scenesOverviewPath);
+            string sceneFolder = Path.GetDirectoryName(sceneOverviewPath);
             Scene s = LoadScene(sceneName, sceneFolder, scenePath, isStartScene);
 
-            if (s.Type != Scene.MediaType.Photo) return;
+            if (s.Type == Scene.MediaType.Photo)
+            {
+                if (s.IsStartScene)
+                {
+                    texturePaths.Insert(0, s.Source);
+                }
+                else
+                {
+                    texturePaths.Add(s.Source);
+                }
+            }
 
-            if (s.IsStartScene)
-            {
-                texturePaths.Insert(0, s.Source);
-            }
-            else
-            {
-                texturePaths.Add(s.Source);
-            }
             counter++;
         }
     }
 
-    void LoadLogos(string scenesOverviewPath)
+    void LoadLogos(string sceneOverviewPath)
     {
         var logoList = scenesOverview.Root.Element("Logos");
         if (logoList != null)
@@ -184,10 +199,10 @@ public class SceneManager : MonoBehaviour
 
                 if (int.TryParse(id_str, out int id))
                 {
-                    string logoPath = Path.Combine(Path.GetDirectoryName(scenesOverviewPath), logoSource);
+                    string logoPath = Path.Combine(Path.GetDirectoryName(sceneOverviewPath), logoSource);
                     if (File.Exists(logoPath))
                     {
-                        logoLoadingOverlay.LoadLogo(id, logoPath, backgroundColor);
+                        spriteManager.LoadLogo(id, logoPath, backgroundColor);
                     }
                     else
                     {
@@ -198,12 +213,38 @@ public class SceneManager : MonoBehaviour
         }
     }
 
+    void LoadSprites(string scenesOverviewPath)
+    {
+        var spritesList = scenesOverview.Root.Element("Sprites");
+        if (spritesList != null)
+        {
+            var sprites = spritesList.Descendants("Sprite");
+            foreach (var sprite in sprites)
+            {
+                string spriteSource = sprite.Attribute("source").Value;
+                int index = int.Parse(sprite.Attribute("id").Value);
+
+                string spritePath = Path.Combine(Path.GetDirectoryName(scenesOverviewPath), spriteSource);
+                if (File.Exists(spritePath))
+                {
+                    spritePaths.Add(index, spritePath); ;
+                }
+                else
+                {
+                    Debug.LogWarning("Sprite file does not exist: " + spritePath);
+                }
+            }
+        }
+    }
+
     void LoadModels(string scenesOverviewPath)
     {
         var modelsList = scenesOverview.Root.Element("Models");
+
         if (modelsList != null)
         {
             var models = modelsList.Descendants("Model");
+
             foreach (var model in models)
             {
                 string modelSource = model.Attribute("source").Value;
@@ -214,7 +255,7 @@ public class SceneManager : MonoBehaviour
                 if (File.Exists(modelPath))
                 {
                     modelPaths.Add(modelName, modelPath);
-                    return;
+                    continue;
                 }
                 Debug.LogWarning("Model file does not exist: " + modelPath);
             }
@@ -262,79 +303,77 @@ public class SceneManager : MonoBehaviour
             int x = int.Parse(element.Attribute("x").Value);
             int y = int.Parse(element.Attribute("y").Value);
 
-            int distance = 10;
-            if (element.Attribute("distance") != null)
-            {
-                distance = int.Parse(element.Attribute("distance").Value);
-            }
+            int distance = TryGetAttributeInt(element, "distance", 10);
 
-            int xRotationOffset = 0;
-            if (element.Attribute("xRotationOffset") != null)
-            {
-                xRotationOffset = int.Parse(element.Attribute("xRotationOffset").Value);
-            }
 
-            string textcolor = "";
-            if (element.Attribute("color") != null)
-            {
-                textcolor = element.Attribute("color").Value;
-            }
+            int xRotationOffset = TryGetAttributeInt(element, "xRotationOffset", 0);
 
 
             SceneElement se;
             if (elementType == "text")
             {
-                string action = element.Attribute("action").Value;
+                string action = TryGetAttributeString(element, "action", "");
                 se = new SceneElementText(
-                        text: text,
-                        x: x, y: y,
-                        distance: distance,
-                        xRotationOffset: xRotationOffset,
-                        action: action, color: textcolor
-                    );
+                    text: text,
+                    x: x, y: y,
+                    distance: distance,
+                    xRotationOffset: xRotationOffset,
+                    action: action
+                );
             }
             else if (elementType == "textbox")
             {
                 string icon = element.Attribute("icon").Value;
                 se = new SceneElementTextbox(
-                        text: text, icon: icon,
-                        x: x, y: y,
-                        distance: distance,
-                        xRotationOffset: xRotationOffset
-                    );
+                    text: text, icon: icon,
+                    x: x, y: y,
+                    distance: distance,
+                    xRotationOffset: xRotationOffset
+                );
             }
             else if (elementType == "directionarrow")
             {
-                string action = element.Attribute("action").Value;
-                int rotation = int.Parse(element.Attribute("rotation").Value);
 
-                string arrowcolor = "";
+                string action = TryGetAttributeString(element, "action", "");
+                int rotation = TryGetAttributeInt(element, "rotation", 0);
+
+                string color = "";
                 if (element.Attribute("color") != null)
                 {
-                    arrowcolor = element.Attribute("color").Value;
+                    color = element.Attribute("color").Value;
                 }
 
                 se = new SceneElementArrow(
-                        x: x, y: y,
-                        distance: distance,
-                        xRotationOffset: xRotationOffset,
-                        rotation: rotation,
-                        color: arrowcolor, action: action
-                    );
+                    x: x, y: y,
+                    distance: distance,
+                    xRotationOffset: xRotationOffset,
+                    rotation: rotation,
+                    color: color, action: action
+                );
 
             }
             else if (elementType == "model")
             {
                 string name = element.Attribute("name").Value;
-                string action = element.Attribute("action").Value;
+
+                string action = TryGetAttributeString(element, "action", "");
+                int rotationX = TryGetAttributeInt(element, "rotationX", 0);
+                int rotationY = TryGetAttributeInt(element, "rotationY", 0);
+                int rotationZ = TryGetAttributeInt(element, "rotationZ", 0);
+                int scale = TryGetAttributeInt(element, "scale", 1);
+
 
                 se = new SceneElementModel(
-                        modelName: name,
-                        x: x, y: y,
-                        distance: distance,
-                        xRotationOffset: xRotationOffset,
-                        action: action
-                    );
+                    modelName: name,
+                    x: x, y: y,
+                    distance: distance,
+                    xRotationOffset: xRotationOffset,
+                    action: action,
+                    xRotation: rotationX,
+                    yRotation: rotationY,
+                    zRotation: rotationZ,
+                    scale: scale
+                );
             }
             else
             {
@@ -350,6 +389,33 @@ public class SceneManager : MonoBehaviour
 
         sceneList.Add(sceneName, sceneObj);
         return sceneObj;
+    }
+
+    float TryGetAttributeFloat(XElement element, string attributeName, float defaultValue)
+    {
+        if (element.Attribute(attributeName) != null)
+        {
+            return float.Parse(element.Attribute(attributeName).Value);
+        }
+        return defaultValue;
+    }
+
+    int TryGetAttributeInt(XElement element, string attributeName, int defaultValue)
+    {
+        if (element.Attribute(attributeName) != null)
+        {
+            return int.Parse(element.Attribute(attributeName).Value);
+        }
+        return defaultValue;
+    }
+
+    string TryGetAttributeString(XElement element, string attributeName, string defaultValue)
+    {
+        if (element.Attribute(attributeName) != null)
+        {
+            return element.Attribute(attributeName).Value;
+        }
+        return defaultValue;
     }
 
 

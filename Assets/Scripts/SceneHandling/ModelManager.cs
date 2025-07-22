@@ -46,7 +46,7 @@ public class ModelManager : MonoBehaviour
         {
             var container = Instantiate(containerPrefab, sceneElementsContainer.transform);
 
-            var animContainer = container.GetComponent<InteractableModel>().animationContainer;
+            var animContainer = container.GetComponent<InteractableModel>().elementContainer;
             model.SetActive(true);
             model.transform.SetParent(animContainer.transform, false);
 
@@ -119,7 +119,7 @@ public class ModelManager : MonoBehaviour
         Debug.LogWarning("Model not found in loaded models: " + modelName);
     }
 
-    float realismFactor = 0.3f;
+    float realismFactor = 0.2f;
     void NormalizeModel(GameObject model)
     {
         model.transform.localPosition = Vector3.zero;
@@ -137,7 +137,27 @@ public class ModelManager : MonoBehaviour
             return;
         }
 
-        Vector3 resultSize = resultRenderer.bounds.size;
+        Bounds meshBounds = new Bounds();
+        bool hasBounds = false;
+        foreach (var meshFilter in model.GetComponentsInChildren<MeshFilter>())
+        {
+            if (meshFilter.sharedMesh != null)
+            {
+                if (!hasBounds)
+                {
+                    meshBounds = meshFilter.sharedMesh.bounds;
+                    meshBounds.center = meshFilter.transform.TransformPoint(meshBounds.center);
+                    hasBounds = true;
+                }
+                else
+                {
+                    Bounds transformedBounds = meshFilter.sharedMesh.bounds;
+                    transformedBounds.center = meshFilter.transform.TransformPoint(transformedBounds.center);
+                    meshBounds.Encapsulate(transformedBounds);
+                }
+            }
+        }
+        Vector3 resultSize = hasBounds ? meshBounds.size : Vector3.zero;
         Vector3 domeSize = domeRenderer.bounds.size;
 
         float resultMax = Mathf.Max(resultSize.x, resultSize.y, resultSize.z);
@@ -162,7 +182,6 @@ public class ModelManager : MonoBehaviour
             scaleFactor = domeSize.z / resultMax;
         }
         scaleFactor = scaleFactor * realismFactor; // realistic scaling
-        Debug.Log($"Scaling model {model.name} by factor: {scaleFactor}");
         model.transform.localScale = Vector3.one * scaleFactor;
     }
 

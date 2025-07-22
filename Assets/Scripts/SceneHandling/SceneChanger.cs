@@ -26,6 +26,7 @@ public class SceneChanger : MonoBehaviour
     InteractionHandler ih;
     TextureManager textureManager;
     LogoLoadingOverlay loadingOverlay;
+    SpriteManager spriteManager;
     ModelManager modelManager;
 
     Scene currentScene;
@@ -37,6 +38,7 @@ public class SceneChanger : MonoBehaviour
         textureManager = FindObjectOfType<TextureManager>();
         modelManager = FindObjectOfType<ModelManager>();
         loadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
+        spriteManager = FindObjectOfType<SpriteManager>();
 
 
         // To prevent particles in the editor window
@@ -327,11 +329,22 @@ public class SceneChanger : MonoBehaviour
     public void LoadModel(SceneElementModel sceneElement)
     {
         DomePosition dp = modelManager.DisplayModel(sceneElement.modelName);
+        if (dp == null)
+        {
+            return;
+        }
 
         dp.position.x = sceneElement.x;
         dp.position.y = sceneElement.y;
         dp.distance = sceneElement.distance;
         dp.xRotOffset = sceneElement.xRotationOffset;
+
+        ModelTransform modelTransform = dp.GetComponent<ModelTransform>();
+
+        modelTransform.rotation.x = sceneElement.xRotation;
+        modelTransform.rotation.y = sceneElement.yRotation;
+        modelTransform.rotation.z = sceneElement.zRotation;
+        modelTransform.scale = sceneElement.scale;
 
         InteractableModel interactableModel = dp.GetComponent<InteractableModel>();
         interactableModel.OnInteract.AddListener(() =>
@@ -393,7 +406,7 @@ public class SceneChanger : MonoBehaviour
 
     public IEnumerator _FadeIn(Action<Action> sceneLoaded, int logoIndex)
     {
-        loadingOverlay.SetLogoFromIndex(logoIndex);
+        spriteManager.SetLogoFromIndex(logoIndex);
         loadingOverlay.FadeIn();
         yield return new WaitForSeconds(2f);
         sceneLoaded.Invoke(() =>

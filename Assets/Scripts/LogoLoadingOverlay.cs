@@ -22,18 +22,8 @@ public class LogoLoadingOverlay : MonoBehaviour
     Color backgroundColor;
     Color logoColor;
 
-    Texture2D[] logoTextures = new Texture2D[3];
-    Color[] logoColors = new Color[3]
-    {
-        new Color(1f, 1f, 1f, 1f),
-        new Color(1f, 1f, 1f, 1f),
-        new Color(1f, 1f, 1f, 1f)
-    };
 
-    [SerializeField]
-    Texture2D logoDefault;
-    Color colorDefault = new Color(1f, 1f, 1f, 1f);
-    void Start()
+    public void Initialize(Texture2D logoDefault, Color colorDefault)
     {
         backgroundMaterial = backgroundRenderer.sharedMaterial;
         logoMaterial = logoRenderer.sharedMaterial;
@@ -49,7 +39,7 @@ public class LogoLoadingOverlay : MonoBehaviour
         logoMaterial.color = new Color(logoColor.r, logoColor.g, logoColor.b, 0);
     }
 
-    void SetBackgroundColor(Color color)
+    public void SetBackgroundColor(Color color)
     {
         color.a = backgroundMaterial.color.a;
         backgroundColor = color;
@@ -58,6 +48,11 @@ public class LogoLoadingOverlay : MonoBehaviour
 
     public void SetLogo(Texture2D newLogo)
     {
+        if (newLogo == null)
+        {
+            return;
+        }
+
         logo = newLogo;
         logoMaterial.mainTexture = logo;
 
@@ -70,45 +65,6 @@ public class LogoLoadingOverlay : MonoBehaviour
         logoMaterial.SetFloat("_TexHeight", aspectHeight);
     }
 
-    public void LoadLogo(int id, string path, string color = "")
-    {
-        StartCoroutine(_LoadLogo(id, path, color));
-    }
-
-
-    IEnumerator _LoadLogo(int id, string path, string color)
-    {
-        if (id < logoTextures.Length)
-        {
-            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture("file://" + path))
-            {
-                yield return uwr.SendWebRequest();
-
-                if (uwr.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError("Failed to load texture: " + uwr.error);
-                    yield return null;
-                }
-                logoTextures[id] = DownloadHandlerTexture.GetContent(uwr);
-
-                var parsedColor = colorDefault;
-                ColorUtility.TryParseHtmlString(color, out parsedColor);
-                logoColors[id] = parsedColor;
-            }
-        }
-
-    }
-
-    public void SetLogoFromIndex(int index)
-    {
-        if (index >= 0 && index < logoTextures.Length && index < logoColors.Length)
-        {
-            SetBackgroundColor(logoColors[index]);
-            SetLogo(logoTextures[index]);
-            return;
-        }
-        SetLogo(logoDefault);
-    }
 
     public void FadeIn()
     {

@@ -362,7 +362,7 @@ public class SceneChanger : MonoBehaviour
     GameObject spritePrefab;
     public void LoadSprite(SceneElementSprite sceneElement)
     {
-        var texture = spriteManager.LoadSprite(sceneElement.index);
+        var texture = spriteManager.GetSprite(sceneElement.index);
 
         if (texture == null) return;
 

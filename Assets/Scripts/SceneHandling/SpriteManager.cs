@@ -60,7 +60,7 @@ public class SpriteManager : MonoBehaviour
         }));
     }
 
-    public Texture2D LoadSprite(int index)
+    public Texture2D GetSprite(int index)
     {
         if (index < 0 || index >= sceneSprites.Length)
         {

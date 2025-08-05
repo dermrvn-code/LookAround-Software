@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3781314477826437640}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   elementContainer: {fileID: 3781314477826437640}
-  elementTransform: {fileID: 3006411130167073699}
+  elementTransform: {fileID: 2107152907277262934}
   rotation: {x: 0, y: 0, z: 0}
   scale: 10
 --- !u!114 &2512959045945451766
@@ -153,12 +153,12 @@ Animation:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7720729835559390680}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: 48a3eb8e78ddb6c4b8f20e668a24025a, type: 2}
+  m_Animation: {fileID: 7400000, guid: 3863bf34a93f5794e88a0e2ee8020b25, type: 2}
   m_Animations:
-  - {fileID: 7400000, guid: 3863bf34a93f5794e88a0e2ee8020b25, type: 2}
   - {fileID: 7400000, guid: 48a3eb8e78ddb6c4b8f20e668a24025a, type: 2}
+  - {fileID: 7400000, guid: 3863bf34a93f5794e88a0e2ee8020b25, type: 2}
   m_WrapMode: 0
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0

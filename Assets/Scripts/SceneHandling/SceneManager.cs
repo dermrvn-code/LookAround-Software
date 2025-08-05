@@ -106,6 +106,7 @@ public class SceneManager : MonoBehaviour
         LoadScenes(scenesOverviewPath);
         LoadLogos(scenesOverviewPath);
         LoadModels(scenesOverviewPath);
+        LoadSprites(scenesOverviewPath);
 
         if (settings != null) settings.CloseView();
 
@@ -144,8 +145,6 @@ public class SceneManager : MonoBehaviour
         }
 
     }
-
-
 
 
     void LoadScenes(string sceneOverviewPath)
@@ -373,6 +372,19 @@ public class SceneManager : MonoBehaviour
                     yRotation: rotationY,
                     zRotation: rotationZ,
                     scale: scale
+                );
+            }
+            else if (elementType == "sprite")
+            {
+                string path = TryGetAttributeString(element, "source", "");
+                int id = TryGetAttributeInt(element, "id", -1);
+
+                se = new SceneElementSprite(
+                    x: x, y: y,
+                    distance: distance,
+                    xRotationOffset: xRotationOffset,
+                    path: path,
+                    index: id
                 );
             }
             else

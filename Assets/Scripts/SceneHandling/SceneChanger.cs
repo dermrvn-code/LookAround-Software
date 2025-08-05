@@ -215,6 +215,10 @@ public class SceneChanger : MonoBehaviour
             {
                 LoadModel((SceneElementModel)sceneElement);
             }
+            else if (sceneElement is SceneElementSprite)
+            {
+                LoadSprite((SceneElementSprite)sceneElement);
+            }
         }
     }
 
@@ -348,6 +352,31 @@ public class SceneChanger : MonoBehaviour
 
         InteractableModel interactableModel = dp.GetComponent<InteractableModel>();
         interactableModel.OnInteract.AddListener(() =>
+        {
+            ActionParser(sceneElement.action);
+        });
+    }
+
+
+    [SerializeField]
+    GameObject spritePrefab;
+    public void LoadSprite(SceneElementSprite sceneElement)
+    {
+        var texture = spriteManager.LoadSprite(sceneElement.index);
+
+        if (texture == null) return;
+
+        var sprite = Instantiate(spritePrefab, sceneElementsContainer.transform).GetComponent<InteractableSprite>();
+
+        sprite.texture = texture;
+
+        DomePosition dp = sprite.GetComponent<DomePosition>();
+        dp.position.x = sceneElement.x;
+        dp.position.y = sceneElement.y;
+        dp.distance = sceneElement.distance;
+        dp.xRotOffset = sceneElement.xRotationOffset;
+
+        sprite.OnInteract.AddListener(() =>
         {
             ActionParser(sceneElement.action);
         });

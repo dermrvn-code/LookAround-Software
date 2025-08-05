@@ -7161,6 +7161,7 @@ MonoBehaviour:
   question: {fileID: 21300000, guid: 3d0eec53afb40eb4899ef113e77cfda3, type: 3}
   play: {fileID: 21300000, guid: f62f3d068a9921a48abbb787681ecceb, type: 3}
   arrowPrefab: {fileID: 5989287706789979100, guid: 004e38a9b71bb0c40aa336e9f0e07259, type: 3}
+  spritePrefab: {fileID: 3679028047257136394, guid: d43ae49a8e655b949ace98934c6c3cf5, type: 3}
 --- !u!114 &563261373
 MonoBehaviour:
   m_ObjectHideFlags: 0

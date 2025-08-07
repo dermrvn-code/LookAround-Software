@@ -5,7 +5,5 @@
     "Unity.TextMeshPro",
     "Siccity.GLTFUtility"
   ],
-  "includePlatforms": [],
-  "excludePlatforms": [],
   "autoReferenced": true
 }

@@ -22,14 +22,14 @@ public class SceneManager : MonoBehaviour
 
     void Start()
     {
-        settings = FindObjectOfType<Settings>();
-        sc = FindObjectOfType<SceneChanger>();
-        textureManager = FindObjectOfType<TextureManager>();
-        modelManager = FindObjectOfType<ModelManager>();
-        progressLoader = FindObjectOfType<ProgressLoader>();
-        spriteManager = FindObjectOfType<SpriteManager>();
+        settings = FindFirstObjectByType<Settings>();
+        sc = FindFirstObjectByType<SceneChanger>();
+        textureManager = FindFirstObjectByType<TextureManager>();
+        modelManager = FindFirstObjectByType<ModelManager>();
+        progressLoader = FindFirstObjectByType<ProgressLoader>();
+        spriteManager = FindFirstObjectByType<SpriteManager>();
 
-        logoLoadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
+        logoLoadingOverlay = FindFirstObjectByType<LogoLoadingOverlay>();
 
         if (isSceneBuilder()) return;
         sc.ToMainScene();
@@ -378,13 +378,15 @@ public class SceneManager : MonoBehaviour
             {
                 string path = TryGetAttributeString(element, "source", "");
                 int id = TryGetAttributeInt(element, "id", -1);
+                string action = TryGetAttributeString(element, "action", "");
 
                 se = new SceneElementSprite(
                     x: x, y: y,
                     distance: distance,
                     xRotationOffset: xRotationOffset,
                     path: path,
-                    index: id
+                    index: id,
+                    action: action
                 );
             }
             else

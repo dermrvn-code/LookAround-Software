@@ -8,7 +8,7 @@ public class DebugConsole : MonoBehaviour
 
     void Start()
     {
-        consoleHudManager = FindObjectsOfType<Console>();
+        consoleHudManager = FindObjectsByType<Console>(FindObjectsSortMode.None);
     }
 
     public static void ToggleActivation()

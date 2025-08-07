@@ -16,6 +16,6 @@ public abstract class Interactable : Hoverable
 
     public void Interact()
     {
-        OnInteract.Invoke();
+        OnInteract?.Invoke();
     }
 }

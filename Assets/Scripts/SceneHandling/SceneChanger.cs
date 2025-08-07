@@ -33,12 +33,12 @@ public class SceneChanger : MonoBehaviour
 
     void Start()
     {
-        sm = FindObjectOfType<SceneManager>();
-        ih = FindObjectOfType<InteractionHandler>();
-        textureManager = FindObjectOfType<TextureManager>();
-        modelManager = FindObjectOfType<ModelManager>();
-        loadingOverlay = FindObjectOfType<LogoLoadingOverlay>();
-        spriteManager = FindObjectOfType<SpriteManager>();
+        sm = FindFirstObjectByType<SceneManager>();
+        ih = FindFirstObjectByType<InteractionHandler>();
+        textureManager = FindFirstObjectByType<TextureManager>();
+        modelManager = FindFirstObjectByType<ModelManager>();
+        loadingOverlay = FindFirstObjectByType<LogoLoadingOverlay>();
+        spriteManager = FindFirstObjectByType<SpriteManager>();
 
 
         // To prevent particles in the editor window
@@ -385,7 +385,7 @@ public class SceneChanger : MonoBehaviour
     public static string[] actionTypes = { "toScene" };
     public void ActionParser(string action)
     {
-        string pattern = @"toScene\(([^,]*?)(?:,(\d))*\)";
+        string pattern = @"toScene\(([^,]*?)(?:,(-?\d))*\)";
         Match match = Regex.Match(action, pattern);
         if (match.Success)
         {

@@ -30,7 +30,7 @@ public class SerialManager : MonoBehaviour
 
     void Start()
     {
-        sc = FindObjectOfType<SceneChanger>();
+        sc = FindFirstObjectByType<SceneChanger>();
         RefreshPortsDropdown();
 
         if (connectToStandardPortText != null)

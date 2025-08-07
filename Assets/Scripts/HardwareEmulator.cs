@@ -10,7 +10,7 @@ public class HardwareEmulator : MonoBehaviour
     bool isSceneBuilder = false;
     void Start()
     {
-        sc = FindObjectOfType<SceneChanger>();
+        sc = FindFirstObjectByType<SceneChanger>();
         if (eyes == null) Debug.LogError("No eyes were given in the Hardware Emulator");
         if (settings == null)
         {

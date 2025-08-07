@@ -1,0 +1,11 @@
+{
+  "name": "LookAround-Software",
+  "references": [
+    "LookAroundCore.Runtime",
+    "Unity.TextMeshPro",
+    "Siccity.GLTFUtility"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

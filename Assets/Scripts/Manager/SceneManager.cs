@@ -5,13 +5,15 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 
-public class SceneManagerExtend : SceneManager
+public class SceneManager : SceneManagerBase
 {
     Settings settings;
 
-    public override void _Start()
+    public override void Start()
     {
-        SceneChangerExtend sceneChangerExt = (SceneChangerExtend)sceneChanger;
+        base.Start();
+
+        SceneChanger sceneChangerExt = (SceneChanger)sceneChanger;
 
         settings = FindFirstObjectByType<Settings>();
         sceneChangerExt.ToMainScene();

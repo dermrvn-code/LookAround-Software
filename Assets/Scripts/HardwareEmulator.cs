@@ -4,13 +4,13 @@ public class HardwareEmulator : MonoBehaviour
 {
     public EyesHandler eyes;
     public Settings settings;
-    public InteractionHandler interactionHandler;
-    public SceneChanger sceneChanger;
+    InteractionHandler interactionHandler;
+    SceneChanger sceneChanger;
 
-    bool isSceneBuilder = false;
     void Start()
     {
         sceneChanger = FindFirstObjectByType<SceneChanger>();
+        interactionHandler = FindFirstObjectByType<InteractionHandler>();
         if (eyes == null) Debug.LogError("No eyes were given in the Hardware Emulator");
         if (settings == null)
         {
@@ -21,10 +21,6 @@ public class HardwareEmulator : MonoBehaviour
     void Update()
     {
         bool settingsVisible = false;
-        if (!isSceneBuilder)
-        {
-            settingsVisible = settings.IsVisible;
-        }
 
         if (Input.GetKey(KeyCode.LeftArrow))
         {

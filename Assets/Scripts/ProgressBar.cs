@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class ProgressBarExtend : ProgressBar
+public class ProgressBar : ProgressBarBase
 {
     [SerializeField]
     Transform progress;
@@ -12,8 +12,9 @@ public class ProgressBarExtend : ProgressBar
     MeshRenderer meshRenderer;
 
 
-    public override void _Update()
+    public override void Update()
     {
+        base.Update();
         progress.gameObject.SetActive(show);
         progressText.gameObject.SetActive(show);
         meshRenderer.enabled = show;

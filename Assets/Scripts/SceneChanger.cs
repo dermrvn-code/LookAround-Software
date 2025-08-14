@@ -1,22 +1,22 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Video;
 
-public class SceneChangerExtend : SceneChanger
+public class SceneChanger : SceneChangerBase
 {
+
+    public override void Awake()
+    {
+        base.Awake();
+    }
+
     public void LoadWorld()
     {
-        SceneManagerExtend.worldsList.TryGetValue(SceneManagerExtend.currentWorld, out string path);
+        SceneManager.worldsList.TryGetValue(SceneManager.currentWorld, out string path);
         if (path == "")
         {
             Debug.LogWarning("The current world is not in the worlds list");
             return;
         }
+        Debug.Log(sceneManager);
         sceneManager.LoadScenesOverview(path, () =>
         {
             Debug.Log("Loading World: " + path);

@@ -232,9 +232,9 @@ public class Settings : MonoBehaviour
         List<string> options = new List<string>();
 
         int i = 0;
-        foreach (var world in SceneManagerExtend.worldsList)
+        foreach (var world in SceneManager.worldsList)
         {
-            if (world.Key == SceneManagerExtend.currentWorld) indexOfCurrentWorld = i;
+            if (world.Key == SceneManager.currentWorld) indexOfCurrentWorld = i;
             options.Add(world.Key);
             i++;
         }
@@ -245,14 +245,14 @@ public class Settings : MonoBehaviour
     public void UpdateCurrentWorld(int value)
     {
         string world = currentWorldDropdown.options[value].text;
-        SceneManagerExtend.currentWorld = world;
+        SceneManager.currentWorld = world;
     }
 
     private void LoadValues()
     {
         worldsOverviewFile = PlayerPrefs.GetString("scenesOverviewFile", "");
         loadWorldOnBoot = PlayerPrefs.GetInt("loadStartSceenOnBoot", 0) == 1 ? true : false;
-        SceneManagerExtend.currentWorld = PlayerPrefs.GetString("currentWorld", "");
+        SceneManager.currentWorld = PlayerPrefs.GetString("currentWorld", "");
         SerialManager.standardConnect = PlayerPrefs.GetInt("standardConnect", 0) == 1 ? true : false;
         TextureManager.maxTexturesToKeep = PlayerPrefs.GetInt("maxTexturesToKeep", 16);
         TextureManager.maxMemoryUsageMB = PlayerPrefs.GetInt("maxMemoryUsageMB", 2000);
@@ -262,7 +262,7 @@ public class Settings : MonoBehaviour
     {
         PlayerPrefs.SetString("scenesOverviewFile", worldsOverviewFile);
         PlayerPrefs.SetInt("loadStartSceenOnBoot", loadWorldOnBoot ? 1 : 0);
-        PlayerPrefs.SetString("currentWorld", SceneManagerExtend.currentWorld);
+        PlayerPrefs.SetString("currentWorld", SceneManager.currentWorld);
         PlayerPrefs.SetInt("standardConnect", SerialManager.standardConnect ? 1 : 0);
         PlayerPrefs.SetInt("maxTexturesToKeep", TextureManager.maxTexturesToKeep);
         PlayerPrefs.SetInt("maxMemoryUsageMB", TextureManager.maxMemoryUsageMB);

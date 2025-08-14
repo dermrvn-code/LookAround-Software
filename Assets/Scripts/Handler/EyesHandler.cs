@@ -13,15 +13,16 @@ public class EyesHandler : ViewHandler
 
     Vector3 posZero;
 
-    protected override void _Awake()
+    void Awake()
     {
         LoadValues();
         currentZoom = leftEye.fieldOfView;
         posZero = transform.localPosition;
     }
 
-    protected override void _Update()
+    public override void Update()
     {
+        base.Update();
         UpdateSpacing();
         UpdateHeight();
         UpdateSplitScreen();
@@ -58,7 +59,7 @@ public class EyesHandler : ViewHandler
         rightEye.transform.localPosition = new Vector3(-halfSpacing, 0, 0);
     }
 
-    protected override void UpdateRotation()
+    public override void UpdateRotation()
     {
         currentRotation = Mathf.SmoothDampAngle(currentRotation, rotation, ref rotationVelocity, rotationSpeed * Time.deltaTime) % 360;
         transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, currentRotation, transform.localEulerAngles.z);
@@ -82,7 +83,7 @@ public class EyesHandler : ViewHandler
         transform.localPosition = pos;
     }
 
-    protected override void UpdateZoom()
+    public override void UpdateZoom()
     {
         zoom = Mathf.Clamp(zoom, 0, 100);
         int targetZoom = (int)Map(zoom, 0, 100, minZoom, maxZoom);

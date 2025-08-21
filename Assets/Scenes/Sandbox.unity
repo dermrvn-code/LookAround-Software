@@ -882,17 +882,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &306764687 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6955068428310497937, guid: 33c748b11374ed848b6f66307085d498, type: 3}
-  m_PrefabInstance: {fileID: 7331308551476159109}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &352835895
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2010,7 +1999,6 @@ GameObject:
   - component: {fileID: 563261379}
   - component: {fileID: 563261383}
   - component: {fileID: 563261384}
-  - component: {fileID: 563261384}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -2164,7 +2152,6 @@ MonoBehaviour:
   arrowPrefab: {fileID: 5989287706789979100, guid: 3aca67b27b11d8b4c936073b6893335d, type: 3}
   spritePrefab: {fileID: 3679028047257136394, guid: d43ae49a8e655b949ace98934c6c3cf5, type: 3}
   puzzlePiecePrefab: {fileID: 3679028047257136394, guid: f335899056fd8684cbfd5cf065ba1c9d, type: 3}
-  puzzlePiecePrefab: {fileID: 3679028047257136394, guid: f335899056fd8684cbfd5cf065ba1c9d, type: 3}
 --- !u!114 &563261383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2179,20 +2166,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainTex: {fileID: 2800000, guid: 73caf884396c612419f95a77b6e71d25, type: 3}
   totalPieces: 4
-  isActive: 0
-  isCompleted: 0
---- !u!114 &563261384
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 563261369}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b445b85fb7f84834d924019a78d2f976, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
   isActive: 0
   isCompleted: 0
 --- !u!114 &563261384
@@ -3856,7 +3829,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: ab05d6eb22062e14984b1cba3b5ca454, type: 3}
-  m_Sprite: {fileID: 21300000, guid: ab05d6eb22062e14984b1cba3b5ca454, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4253,7 +4225,6 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 563261382}
-      objectReference: {fileID: 563261382}
     - target: {fileID: 5814268603852110216, guid: fd8013594c01fec4986d93cbefbae011, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
@@ -4264,7 +4235,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5814268603852110216, guid: fd8013594c01fec4986d93cbefbae011, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: SceneChanger, LookAround-Software
       value: SceneChanger, LookAround-Software
       objectReference: {fileID: 0}
     - target: {fileID: 5814268603852110216, guid: fd8013594c01fec4986d93cbefbae011, type: 3}
@@ -5855,10 +5825,6 @@ PrefabInstance:
       propertyPath: m_CullTransparentMesh
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 2361157207693091809, guid: 33c748b11374ed848b6f66307085d498, type: 3}
-      propertyPath: m_TargetGraphic
-      value: 
-      objectReference: {fileID: 306764687}
     - target: {fileID: 2361157207693091809, guid: 33c748b11374ed848b6f66307085d498, type: 3}
       propertyPath: m_TargetGraphic
       value: 

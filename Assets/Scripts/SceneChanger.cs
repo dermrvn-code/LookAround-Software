@@ -16,7 +16,7 @@ public class SceneChanger : SceneChangerBase
             Debug.LogWarning("The current world is not in the worlds list");
             return;
         }
-        Debug.Log(sceneManager);
+        
         sceneManager.LoadScenesOverview(path, () =>
         {
             Debug.Log("Loading World: " + path);

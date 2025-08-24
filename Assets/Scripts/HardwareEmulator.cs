@@ -20,60 +20,58 @@ public class HardwareEmulator : MonoBehaviour
 
     void Update()
     {
-        bool settingsVisible = false;
-
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            if (!settingsVisible)
+            if (!settings.IsVisible)
             {
                 eyes.LeftMove();
             }
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
-            if (!settingsVisible)
+            if (!settings.IsVisible)
             {
                 eyes.RightMove();
             }
         }
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (settingsVisible)
+            if (settings.IsVisible)
             {
                 settings.ShiftElement(-1);
             }
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (settingsVisible)
+            if (settings.IsVisible)
             {
                 settings.ShiftElement(1);
             }
         }
         if (Input.GetKey(KeyCode.DownArrow))
         {
-            if (!settingsVisible)
+            if (!settings.IsVisible)
             {
                 eyes.ZoomIn();
             }
         }
         else if (Input.GetKey(KeyCode.UpArrow))
         {
-            if (!settingsVisible)
+            if (!settings.IsVisible)
             {
                 eyes.ZoomOut();
             }
         }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (settingsVisible)
+            if (settings.IsVisible)
             {
                 settings.MoveSelector(1);
             }
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (settingsVisible)
+            if (settings.IsVisible)
             {
                 settings.MoveSelector(-1);
             }
@@ -84,7 +82,7 @@ public class HardwareEmulator : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (settingsVisible)
+            if (settings.IsVisible)
             {
                 settings.SelectElement();
             }
@@ -95,7 +93,7 @@ public class HardwareEmulator : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.H))
         {
-            if (!settingsVisible)
+            if (!settings.IsVisible)
             {
                 sceneChanger.ToStartScene();
             }
